@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sacha Aventuras - DISAR</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Press Start 2P', monospace;
+            /* Previene zooms o retrasos accidentales al presionar botones en móviles */
+            touch-action: manipulation;
+        }
+
+        body {
+            margin: 0;
+            padding: 10px;
+            background-color: #a3e2f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 680px;
+            background-color: #fff;
+            border: 6px solid #000;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 6px 6px 0px #1d71b8;
+            text-align: center;
+            position: relative;
+            margin: auto;
+        }
+
+        h1 {
+            font-size: 4.5vw;
+            color: #1d71b8;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        h2 {
+            font-size: 3.2vw;
+            color: #333;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .question-box {
+            color: #cc0000;
+            font-size: 2.8vw;
+            background: #fff3f3;
+            padding: 10px;
+            border: 3px dashed #000;
+            display: inline-block;
+            margin-bottom: 20px;
+            line-height: 1.4;
+            width: 95%;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .active {
+            display: block;
+        }
+
+        button {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 2.5vw;
+            background-color: #ff9900;
+            color: white;
+            border: 4px solid #000;
+            padding: 12px;
+            cursor: pointer;
+            margin: 6px;
+            box-shadow: 4px 4px 0px #995c00;
+            word-wrap: break-word;
+        }
+
+        button:active {
+            box-shadow: 0px 0px 0px;
+            transform: translate(4px, 4px);
+        }
+
+        .sacha-avatar {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 15px;
+            background-color: #ffcc00;
+            border: 4px solid #000;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            position: relative;
+        }
+
+        .sacha-badge {
+            position: absolute;
+            bottom: -5px;
+            background: #1d71b8;
+            color: white;
+            font-size: 6px;
+            padding: 3px;
+            border: 2px solid #000;
+        }
+
+        .game-flex {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .card-center {
+            border: 4px solid #000;
+            padding: 15px;
+            background: #f0f0f0;
+            width: 85%;
+            max-width: 340px;
+            border-radius: 8px;
+            margin: 0 auto 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .animal-card {
+            border: 4px solid #000;
+            padding: 12px;
+            background: #f0f0f0;
+            width: 46%;
+            min-width: 130px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .display-emoji {
+            font-size: 12vw;
+            margin-bottom: 15px;
+        }
+
+        .btn-sound {
+            background-color: #5cb85c;
+            box-shadow: 4px 4px 0px #3e8e41;
+            padding: 8px;
+            font-size: 2.2vw;
+            width: 100%;
+            margin-bottom: 5px;
+        }
+
+        .btn-select {
+            width: 100%;
+            background-color: #1d71b8;
+            box-shadow: 4px 4px 0px #11446e;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        .btn-option {
+            width: 90%;
+            background-color: #1d71b8;
+            box-shadow: 4px 4px 0px #11446e;
+        }
+
+        /* --- ESTILOS DRAG & DROP RESPONSIVE --- */
+        .spawn-zone {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            background: #f7f7f7;
+            border: 4px dashed #666;
+            padding: 15px;
+            min-height: 90px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .draggable-item {
+            cursor: grab;
+            user-select: none;
+            transition: transform 0.1s;
+            touch-action: none; /* Permite arrastrar en móviles sin desplazar la página web */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .draggable-item:active {
+            cursor: grabbing;
+            transform: scale(1.1);
+        }
+
+        .targets-container {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .dropzone-box {
+            border: 4px solid #000;
+            border-radius: 8px;
+            padding: 10px 4px;
+            color: white;
+            font-size: 6px;
+            line-height: 1.4;
+            min-height: 115px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .width-3 { width: 31%; min-width: 85px; }
+        .width-4 { width: 23%; min-width: 72px; margin-bottom: 8px; }
+
+        .dropzone-box span, .display-profesional { 
+            font-size: 7.5vw !important;
+            margin-top: 5px; 
+            display: inline-block;
+        }
+
+        .color-verde { background-color: #2e7d32; box-shadow: inset -4px -4px 0 #1b5e20; }
+        .color-azul { background-color: #1565c0; box-shadow: inset -4px -4px 0 #0d47a1; }
+        .color-amarillo { background-color: #fbc02d; box-shadow: inset -4px -4px 0 #f57f17; color: #000; }
+        .color-rojo { background-color: #d32f2f; box-shadow: inset -4px -4px 0 #9a0007; }
+        .color-morado { background-color: #7b1fa2; box-shadow: inset -4px -4px 0 #4a0072; }
+        .color-naranja { background-color: #e65100; box-shadow: inset -4px -4px 0 #b71c1c; }
+
+        .drag-hover { transform: scale(1.05); border-style: dashed; }
+
+        .classroom-text-card {
+            background: #fff9c4;
+            border: 4px solid #fbc02d;
+            padding: 15px;
+            font-size: 3vw;
+            color: #333;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+
+        .btn-behavior {
+            width: 46%;
+            font-size: 2.8vw;
+            padding: 15px 5px;
+        }
+
+        [id^="feedback-"] {
+            margin-top: 15px;
+            font-size: 3vw;
+            min-height: 20px;
+            font-weight: bold;
+        }
+
+        .success { color: green; }
+        .error { color: red; }
+
+        .disar-footer {
+            margin-top: 25px;
+            font-size: 8px;
+            color: #777;
+        }
+
+        /* --- MEDIA QUERIES PARA PANTALLAS GRANDES (ESCRITORIO / PC) --- */
+        @media (min-width: 600px) {
+            #game-container { padding: 20px 25px; }
+            h1 { font-size: 18px; }
+            h2 { font-size: 11px; }
+            .question-box { font-size: 12px; width: auto; }
+            button { font-size: 10px; padding: 15px; margin: 10px; }
+            .animal-card { width: 45%; padding: 15px; }
+            .display-emoji { font-size: 60px; }
+            .btn-sound { font-size: 8px; }
+            .dropzone-box { min-height: 135px; font-size: 7px; padding: 12px 4px; }
+            .width-4 { min-width: 130px; margin-bottom: 10px; }
+            .dropzone-box span, .display-profesional { font-size: 40px !important; margin-top: 10px; }
+            .classroom-text-card { font-size: 12px; padding: 20px; }
+            .btn-behavior { font-size: 11px; padding: 20px 10px; }
+            [id^="feedback-"] { font-size: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+
+    <!-- 1. PANTALLA DE INICIO -->
+    <div id="screen-home" class="screen active">
+        <div class="sacha-avatar" style="border-radius: 0; background-color: transparent; border: none; width: auto; height: auto;">
+            <!-- AQUÍ SE CARGA TU IMAGEN -->
+            <img src="mascota.png" alt="Sacha" style="width: 120px; height: auto; image-rendering: pixelated;">
+            <div class="sacha-badge" style="bottom: -15px;">DISAR</div>
+        </div>
+        <br><br>
+        <h1>¡Sacha Aventuras!</h1>
+        <p style="font-size: 8px; line-height: 1.4;">Aprende con la mascota oficial de DISAR</p>
+        <br>
+        <button onclick="changeScreen('screen-menu')">JUGAR</button>
+    </div>
+
+    <!-- 2. SUBMENU DE MINIJUEGOS -->
+    <div id="screen-menu" class="screen">
+        <h2>Menú de Minijuegos</h2>
+        <div style="display: flex; flex-direction: column; align-items: center;">
+            <button onclick="changeScreen('screen-game1')" style="width: 85%;">1. Salvajes vs Domésticos</button>
+            <button onclick="changeScreen('screen-game2')" style="width: 85%; background-color: #00ccff; box-shadow: 4px 4px 0px #0088aa;">2. Vías de Transporte</button>
+            <button onclick="changeScreen('screen-game3')" style="width: 85%; background-color: #4caf50; box-shadow: 4px 4px 0px #2e7d32;">3. Cuidemos el Planeta</button>
+            <button onclick="changeScreen('screen-game4')" style="width: 85%; background-color: #e91e63; box-shadow: 4px 4px 0px #b0003a;">4. Oficios y Profesiones</button>
+            <button onclick="changeScreen('screen-game5')" style="width: 85%; background-color: #ff5722; box-shadow: 4px 4px 0px #e64a19;">5. Tamaños Grandes y Pequeños</button>
+            <button onclick="changeScreen('screen-game6')" style="width: 85%; background-color: #9c27b0; box-shadow: 4px 4px 0px #7b1fa2;">6. Normas del Aula 🏫</button>
+        </div>
+        <br>
+        <button onclick="changeScreen('screen-home')" style="background-color: #d9534f; box-shadow: 4px 4px 0px #b52b27;">Atrás</button>
+    </div>
+
+    <!-- MINIJUEGO 1 -->
+    <div id="screen-game1" class="screen">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid #000; padding-bottom: 10px;">
+            <span style="font-size: 8px; color: #1d71b8;">Sacha Educa 🐆</span>
+            <button onclick="changeScreen('screen-menu')" style="margin:0; padding: 5px; font-size: 8px; background-color: #d9534f; box-shadow: 2px 2px 0px #b52b27;">Salir</button>
+        </div>
+        <br>
+        <div id="question-text-1" class="question-box">¿Qué animal es el...?</div>
+        <div class="game-flex">
+            <div class="animal-card">
+                <div id="emoji-left" class="display-emoji">🦁</div>
+                <button class="btn-sound" onclick="playAnimalSound('left')">🔊 Escucha</button>
+                <button class="btn-select" onclick="checkAnswer1('left')">¡Es este!</button>
+            </div>
+            <div class="animal-card">
+                <div id="emoji-right" class="display-emoji">🐷</div>
+                <button class="btn-sound" onclick="playAnimalSound('right')">🔊 Escucha</button>
+                <button class="btn-select" onclick="checkAnswer1('right')">¡Es este!</button>
+            </div>
+        </div>
+        <div id="feedback-1"></div>
+        <button id="btn-next-1" onclick="nextRoundGame1()" style="display: none; background-color: #5cb85c; box-shadow: 4px 4px 0px #3e8e41;">Siguiente</button>
+    </div>
+
+    <!-- MINIJUEGO 2 -->
+    <div id="screen-game2" class="screen">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid #000; padding-bottom: 10px;">
+            <span style="font-size: 8px; color: #1d71b8;">Sacha Rutas 🐆</span>
+            <button onclick="changeScreen('screen-menu')" style="margin:0; padding: 5px; font-size: 8px; background-color: #d9534f; box-shadow: 2px 2px 0px #b52b27;">Salir</button>
+        </div>
+        <br>
+        <div class="question-box" style="color: #1d71b8; background-color: #e3f2fd;">¿Por dónde debe ir este transporte?</div>
+        <div class="card-center">
+            <div id="transport-emoji" class="display-emoji">🚢</div>
+            <button class="btn-sound" onclick="playTransportSound()" style="width: auto; padding: 10px 20px;">🔊 Escuchar</button>
+        </div>
+        <div class="options-container">
+            <button class="btn-option" onclick="checkAnswer2('el aire')">El Aire ☁️</button>
+            <button class="btn-option" onclick="checkAnswer2('la carretera')">La Carretera 🛣️</button>
+            <button class="btn-option" onclick="checkAnswer2('el río')">El Río 🌊</button>
+        </div>
+        <div id="feedback-2"></div>
+        <button id="btn-next-2" onclick="nextRoundGame2()" style="display: none; background-color: #5cb85c; box-shadow: 4px 4px 0px #3e8e41;">Siguiente</button>
+    </div>
+
+    <!-- MINIJUEGO 3 -->
+    <div id="screen-game3" class="screen">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid #000; padding-bottom: 10px;">
+            <span style="font-size: 8px; color: #2e7d32;">Sacha Planeta 🌿</span>
+            <button onclick="changeScreen('screen-menu')" style="margin:0; padding: 5px; font-size: 8px; background-color: #d9534f; box-shadow: 2px 2px 0px #b52b27;">Salir</button>
+        </div>
+        <br>
+        <div class="question-box" style="color: #2e7d32; background-color: #e8f5e9; margin-bottom: 10px;">¡Arrastra los desperdicios al tacho correcto!</div>
+        <p style="font-size: 7px; margin-bottom: 15px; color: #555;">(Haz clic para escuchar el sonido del material)</p>
+
+        <div id="garbage-spawn-zone" class="spawn-zone" style="border-color: #2e7d32; background: #e8f5e9;"></div>
+
+        <div class="targets-container">
+            <div class="dropzone-box width-3 color-verde" data-targetid="verde" ondragover="allowDrop(event)" ondragleave="clearHover(event)" ondrop="dropItem(event, 'game3')">
+                ORGÁNICO <span>🗑️</span>
+            </div>
+            <div class="dropzone-box width-3 color-azul" data-targetid="azul" ondragover="allowDrop(event)" ondragleave="clearHover(event)" ondrop="dropItem(event, 'game3')">
+                PAPEL <span>🗑️</span>
+            </div>
+            <div class="dropzone-box width-3 color-amarillo" data-targetid="amarillo" ondragover="allowDrop(event)" ondragleave="clearHover(event)" ondrop="dropItem(event, 'game3')">
+                PLÁSTICO <span>🗑️</span>
+            </div>
+        </div>
+        <div id="feedback-3"></div>
+        <button id="btn-next-3" onclick="nextRoundGame3()" style="display: none; background-color: #5cb85c; box-shadow: 4px 4px 0px #3e8e41;">¡Jugar de nuevo!</button>
+    </div>
+
+    <!-- MINIJUEGO 4 -->
+    <div id="screen-game4" class="screen">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid #000; padding-bottom: 10px;">
+            <span style="font-size: 8px; color: #b0003a;">Sacha Oficios 🛠️</span>
+            <button onclick="changeScreen('screen-menu')" style="margin:0; padding: 5px; font-size: 8px; background-color: #d9534f; box-shadow: 2px 2px 0px #b52b27;">Salir</button>
+        </div>
+        <br>
+        <div class="question-box" style="color: #b0003a; background-color: #fce4ec; margin-bottom: 10px;">¡Reparte las herramientas al profesional correcto!</div>
+        <p style="font-size: 7px; margin-bottom: 15px; color: #555;">(Haz clic en cada herramienta para escucharla)</p>
+
+        <div id="tools-spawn-zone" class="spawn-zone" style="border-color: #b0003a; background: #fce4ec;"></div>
+
+        <div class="targets-container">
+            <div class="dropzone-box width-4 color-rojo" data-targetid="bombero" ondragover="allowDrop(event)" ondragleave="clearHover(event)" ondrop="dropItem(event, 'game4')">
+                BOMBERO <span class="display-profesional">👨‍🚒</span>
+            </div>
+            <div class="dropzone-box width-4 color-azul" data-targetid="doctor" ondragover="allowDrop(event)" ondragleave="clearHover(event)" ondrop="dropItem(event, 'game4')">
+                DOCTOR <span class="display-profesional">👩‍⚕️</span>
+            </div>
+            <div class="dropzone-box width-4 color-amarillo" data-targetid="constructor" ondragover="allowDrop(event)" ondragleave="clearHover(event)" ondrop="dropItem(event, 'game4')">
+                CONST. <span class="display-profesional">👷‍♂️</span>
+            </div>
+            <div class="dropzone-box width-4 color-morado" data-targetid="profesor" ondragover="allowDrop(event)" ondragleave="clearHover(event)" ondrop="dropItem(event, 'game4')">
+                PROFE. <span class="display-profesional">👨‍🏫</span>
+            </div>
+        </div>
+        <div id="feedback-4"></div>
+        <button id="btn-next-4" onclick="nextRoundGame4()" style="display: none; background-color: #5cb85c; box-shadow: 4px 4px 0px #3e8e41;">¡Jugar de nuevo!</button>
+    </div>
+
+    <!-- MINIJUEGO 5 -->
+    <div id="screen-game5" class="screen">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid #000; padding-bottom: 10px;">
+            <span style="font-size: 8px; color: #e64a19;">Sacha Tamaños 📏</span>
+            <button onclick="changeScreen('screen-menu')" style="margin:0; padding: 5px; font-size: 8px; background-color: #d9534f; box-shadow: 2px 2px 0px #b52b27;">Salir</button>
+        </div>
+        <br>
+        <div class="question-box" style="color: #e64a19; background-color: #fff3e0; margin-bottom: 10px;">¡Ordena por tamaño de pequeño a grande!</div>
+        <p style="font-size: 7px; margin-bottom: 15px; color: #555;">(Haz clic para escuchar el sonido real)</p>
+
+        <div id="sizes-spawn-zone" class="spawn-zone" style="border-color: #e64a19; background: #fff3e0;"></div>
+
+        <div class="targets-container">
+            <div class="dropzone-box width-3 color-naranja" data-targetid="pequeño" ondragover="allowDrop(event)" ondragleave="clearHover(event)" ondrop="dropItem(event, 'game5')">
+                PEQUEÑO <span>📦</span>
+            </div>
+            <div class="dropzone-box width-3 color-naranja" data-targetid="mediano" ondragover="allowDrop(event)" ondragleave="clearHover(event)" ondrop="dropItem(event, 'game5')">
+                MEDIANO <span>🗃️</span>
+            </div>
+            <div class="dropzone-box width-3 color-naranja" data-targetid="grande" ondragover="allowDrop(event)" ondragleave="clearHover(event)" ondrop="dropItem(event, 'game5')">
+                GRANDE <span>🗳️</span>
+            </div>
+        </div>
+        <div id="feedback-5"></div>
+        <button id="btn-next-5" onclick="nextRoundGame5()" style="display: none; background-color: #5cb85c; box-shadow: 4px 4px 0px #3e8e41;">¡Siguiente Ronda!</button>
+    </div>
+
+    <!-- MINIJUEGO 6 -->
+    <div id="screen-game6" class="screen">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid #000; padding-bottom: 10px;">
+            <span style="font-size: 8px; color: #7b1fa2;">Sacha Aula 🏫</span>
+            <button onclick="changeScreen('screen-menu')" style="margin:0; padding: 5px; font-size: 8px; background-color: #d9534f; box-shadow: 2px 2px 0px #b52b27;">Salir</button>
+        </div>
+        <br>
+        <div class="question-box" style="color: #7b1fa2; background-color: #f3e5f5; margin-bottom: 15px;">¿Qué debe hacer Sacha en esta situación?</div>
+
+        <div class="classroom-text-card">
+            <div id="classroom-emoji" style="font-size: 40px; margin-bottom: 15px;">🙋‍♂️</div>
+            <p id="classroom-text">Cargando situación...</p>
+            <button class="btn-sound" onclick="playClassroomSound()" style="width: auto; padding: 8px 15px; background-color: #9c27b0;">🔊 Escuchar Aula</button>
+        </div>
+
+        <div class="game-flex" style="margin-top: 10px;">
+            <button class="btn-behavior color-verde" onclick="checkBehaviorAnswer(true)">😊 ¡BIEN!</button>
+            <button class="btn-behavior color-rojo" onclick="checkBehaviorAnswer(false)">😢 ¡ASÍ NO!</button>
+        </div>
+
+        <div id="feedback-6"></div>
+        <button id="btn-next-6" onclick="nextRoundGame6()" style="display: none; background-color: #5cb85c; box-shadow: 4px 4px 0px #3e8e41;">Siguiente Caso</button>
+    </div>
+
+    <div class="disar-footer">DISAR © 2026</div>
+</div>
+
+<script>
+    let currentAudio = null;
+    let draggedElementRef = null;
+
+    const salvajes = [
+        { emoji: '🦁', type: 'salvaje', audio: 'sonidos/leon.mp3' },
+        { emoji: '🐘', type: 'salvaje', audio: 'sonidos/elefante.mp3' },
+        { emoji: '🐯', type: 'salvaje', audio: 'sonidos/tigre.mp3' },
+        { emoji: '🐺', type: 'salvaje', audio: 'sonidos/lobo.mp3' }
+    ];
+    const domesticos = [
+        { emoji: '🐷', type: 'domestico', audio: 'sonidos/cerdo.mp3' },
+        { emoji: '🐶', type: 'domestico', audio: 'sonidos/perro.mp3' },
+        { emoji: '🐱', type: 'domestico', audio: 'sonidos/gato.mp3' },
+        { emoji: '🐮', type: 'domestico', audio: 'sonidos/vaca.mp3' }
+    ];
+    const transportes = [
+        { emoji: '🚢', name: 'barco', correctWay: 'el río', audio: 'sonidos/barco.mp3' },
+        { emoji: '🚗', name: 'auto', correctWay: 'la carretera', audio: 'sonidos/auto.mp3' },
+        { emoji: '🛩️', name: 'avioneta', correctWay: 'el aire', audio: 'sonidos/avioneta.mp3' }
+    ];
+    const residuosBase = [
+        { id: 'g1', emoji: '🍌', tacho: 'verde', audio: 'sonidos/organico.mp3' },
+        { id: 'g2', emoji: '🍎', tacho: 'verde', audio: 'sonidos/organico.mp3' },
+        { id: 'g3', emoji: '📰', tacho: 'azul', audio: 'sonidos/papel.mp3' },
+        { id: 'g4', emoji: '📦', tacho: 'azul', audio: 'sonidos/papel.mp3' },
+        { id: 'g5', emoji: '🍼', tacho: 'amarillo', audio: 'sonidos/plastico.mp3' },
+        { id: 'g6', emoji: '🥤', tacho: 'amarillo', audio: 'sonidos/plastico.mp3' }
+    ];
+    const herramientasBase = [
+        { id: 't1', emoji: '🚒', target: 'bombero', audio: 'sonidos/bombero.mp3' },
+        { id: 't2', emoji: '🚑', target: 'doctor', audio: 'sonidos/ambulancia.mp3' },
+        { id: 't3', emoji: '🛠️', target: 'constructor', audio: 'sonidos/martillo.mp3' },
+        { id: 't4', emoji: '📚', target: 'profesor', audio: 'sonidos/campana.mp3' },
+        { id: 't5', emoji: '🦺', target: 'constructor', audio: 'sonidos/martillo.mp3' },
+        { id: 't6', emoji: '📐', target: 'profesor', audio: 'sonidos/campana.mp3' },
+        { id: 't7', emoji: '🔥', target: 'bombero', audio: 'sonidos/bombero.mp3' } 
+    ];
+
+    const rondasTamaños = [
+        [{ id: 's1', emoji: '🐘', target: 'grande', sizeStyle: '40px', audio: 'sonidos/elefante.mp3' }, { id: 's2', emoji: '🦁', target: 'mediano', sizeStyle: '30px', audio: 'sonidos/leon.mp3' }, { id: 's3', emoji: '🐇', target: 'pequeño', sizeStyle: '20px', audio: 'sonidos/conejo.mp3' }],
+        [{ id: 's4', emoji: '🏠', target: 'grande', sizeStyle: '40px', audio: 'sonidos/casa.mp3' }, { id: 's5', emoji: '🌲', target: 'mediano', sizeStyle: '30px', audio: 'sonidos/arbol.mp3' }, { id: 's6', emoji: '⚽', target: 'pequeño', sizeStyle: '18px', audio: 'sonidos/pelota.mp3' }],
+        [{ id: 's7', emoji: '🦒', target: 'grande', sizeStyle: '42px', audio: 'sonidos/jirafa.mp3' }, { id: 's8', emoji: '🐒', target: 'mediano', sizeStyle: '28px', audio: 'sonidos/mono.mp3' }, { id: 's9', emoji: '🐭', target: 'pequeño', sizeStyle: '18px', audio: 'sonidos/raton.mp3' }],
+        [{ id: 's10', emoji: '🚛', target: 'grande', sizeStyle: '40px', audio: 'sonidos/camion.mp3' }, { id: 's11', emoji: '🚲', target: 'mediano', sizeStyle: '28px', audio: 'sonidos/bicicleta.mp3' }, { id: 's12', emoji: '🔑', target: 'pequeño', sizeStyle: '18px', audio: 'sonidos/llave.mp3' }]
+    ];
+
+    const situacionesAula = [
+        { emoji: '🙋‍♂️', text: 'El profesor hace una pregunta y yo sé la respuesta correcta. ¿Debo levantar la mano y esperar mi turno?', isGood: true, audio: 'sonidos/campana.mp3' },
+        { emoji: '🏃‍♂️', text: 'Quiero salir rápido al recreo. ¿Está bien correr empujando a mis compañeros en el pasillo?', isGood: false, audio: 'sonidos/campana.mp3' },
+        { emoji: '🤫', text: 'Un compañero está exponiendo su dibujo al frente de la clase. ¿Debo guardar silencio y escuchar con atención?', isGood: true, audio: 'sonidos/campana.mp3' },
+        { emoji: '🎒', text: 'Terminó la clase de pintura. ¿Dejo las pinturas tiradas en el piso del aula?', isGood: false, audio: 'sonidos/campana.mp3' }
+    ];
+
+    let currentRoundData1 = {};
+    let targetType1 = 'salvaje';
+    let currentTransport = {};
+    let activeItemsCount = 0;
+    let indiceRondaTamaño = 0;
+    let currentClassroomCase = {};
+
+    function playGlobalSuccess() {
+        let snd = new Audio('sonidos/victoria.mp3');
+        snd.play().catch(e => {});
+    }
+
+    function playGlobalError() {
+        let snd = new Audio('sonidos/error.mp3');
+        snd.play().catch(e => {});
+    }
+
+    function changeScreen(screenId) {
+        if(currentAudio) currentAudio.pause();
+        document.querySelectorAll('.screen').forEach(screen => screen.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+        
+        if(screenId === 'screen-game1') nextRoundGame1();
+        if(screenId === 'screen-game2') nextRoundGame2();
+        if(screenId === 'screen-game3') nextRoundGame3();
+        if(screenId === 'screen-game4') nextRoundGame4();
+        if(screenId === 'screen-game5') nextRoundGame5();
+        if(screenId === 'screen-game6') nextRoundGame6();
+    }
+
+    function nextRoundGame1() {
+        if(currentAudio) currentAudio.pause();
+        document.getElementById('feedback-1').innerHTML = "";
+        document.getElementById('btn-next-1').style.display = "none";
+        targetType1 = Math.random() < 0.5 ? 'salvaje' : 'domestico';
+        const qText = document.getElementById('question-text-1');
+        if(targetType1 === 'salvaje') {
+            qText.innerText = "¿Qué animal es SALVAJE? ⛰️"; qText.style.color = "#cc0000"; qText.style.backgroundColor = "#fff3f3";
+        } else {
+            qText.innerText = "¿Qué animal es DOMÉSTICO? 🏡"; qText.style.color = "#1d71b8"; qText.style.backgroundColor = "#e3f2fd";
+        }
+        const salvaje = salvajes[Math.floor(Math.random() * salvajes.length)];
+        const domestico = domesticos[Math.floor(Math.random() * domesticos.length)];
+        if (Math.random() < 0.5) { currentRoundData1 = { left: salvaje, right: domestico }; }
+        else { currentRoundData1 = { left: domestico, right: salvaje }; }
+        document.getElementById('emoji-left').innerText = currentRoundData1.left.emoji;
+        document.getElementById('emoji-right').innerText = currentRoundData1.right.emoji;
+    }
+
+    function playAnimalSound(side) {
+        if(currentAudio) currentAudio.pause();
+        currentAudio = new Audio(currentRoundData1[side].audio); currentAudio.play().catch(e => {});
+    }
+
+    function checkAnswer1(side) {
+        if (currentRoundData1[side].type === targetType1) {
+            document.getElementById('feedback-1').innerHTML = "<span class='success'>¡BIEN HECHO! 🏆</span>";
+            document.getElementById('btn-next-1').style.display = "inline-block";
+            playGlobalSuccess();
+        } else { 
+            document.getElementById('feedback-1').innerHTML = "<span class='error'>❌ Intenta de nuevo</span>"; 
+            playGlobalError();
+        }
+    }
+
+    function nextRoundGame2() {
+        if(currentAudio) currentAudio.pause();
+        document.getElementById('feedback-2').innerHTML = "";
+        document.getElementById('btn-next-2').style.display = "none";
+        currentTransport = transportes[Math.floor(Math.random() * transportes.length)];
+        document.getElementById('transport-emoji').innerText = currentTransport.emoji;
+    }
+
+    function playTransportSound() {
+        if(currentAudio) currentAudio.pause();
+        currentAudio = new Audio(currentTransport.audio); currentAudio.play().catch(e => {});
+    }
+
+    function checkAnswer2(selectedOption) {
+        if (selectedOption === currentTransport.correctWay) {
+            document.getElementById('feedback-2').innerHTML = "<span class='success'>¡EXCELENTE! 🏆</span>";
+            document.getElementById('btn-next-2').style.display = "inline-block";
+            playGlobalSuccess();
+        } else { 
+            document.getElementById('feedback-2').innerHTML = "<span class='error'>❌ ¡Intenta de nuevo!</span>"; 
+            playGlobalError();
+        }
+    }
+
+    function buildDragAndDropLevel(spawnZoneId, itemsBase) {
+        const spawnZone = document.getElementById(spawnZoneId);
+        spawnZone.innerHTML = "";
+        let listaDesordenada = [...itemsBase].sort(() => Math.random() - 0.5);
+        activeItemsCount = listaDesordenada.length;
+
+        listaDesordenada.forEach(item => {
+            const el = document.createElement('div');
+            el.className = 'draggable-item';
+            el.id = item.id;
+            el.innerText = item.emoji;
+            el.setAttribute('draggable', 'true');
+            el.setAttribute('data-target-correcto', item.target || item.tacho);
+            if (item.sizeStyle) el.style.fontSize = item.sizeStyle;
+            else el.style.fontSize = '35px'; // Escala base óptima para pantallas pequeñas
+            
+            el.ondragstart = (ev) => ev.dataTransfer.setData("text/plain", ev.target.id);
+            el.onclick = () => {
+                if(currentAudio) currentAudio.pause();
+                currentAudio = new Audio(item.audio); currentAudio.play().catch(e => {});
+            };
+            el.addEventListener('touchstart', (e) => { draggedElementRef = e.currentTarget; }, {passive: false});
+            el.addEventListener('touchmove', handleTouchMove, {passive: false});
+            el.addEventListener('touchend', (e) => handleTouchEnd(e, spawnZoneId), {passive: false});
+            spawnZone.appendChild(el);
+        });
+    }
+
+    function nextRoundGame3() { document.getElementById('feedback-3').innerHTML = ""; document.getElementById('btn-next-3').style.display = "none"; buildDragAndDropLevel('garbage-spawn-zone', residuosBase); }
+    function nextRoundGame4() { document.getElementById('feedback-4').innerHTML = ""; document.getElementById('btn-next-4').style.display = "none"; buildDragAndDropLevel('tools-spawn-zone', herramientasBase); }
+   function nextRoundGame5() { document.getElementById('feedback-5').innerHTML = ""; document.getElementById('btn-next-5').style.display = "none"; let rondaActual = rondasTamaños[indiceRondaTamaño]; buildDragAndDropLevel('sizes-spawn-zone', rondaActual); indiceRondaTamaño = (indiceRondaTamaño + 1) % rondasTamaños.length; }
+
+    function allowDrop(ev) { ev.preventDefault(); ev.currentTarget.classList.add('drag-hover'); }
+    function clearHover(ev) { ev.currentTarget.classList.remove('drag-hover'); }
+    function dropItem(ev, gameCode) { ev.preventDefault(); ev.currentTarget.classList.remove('drag-hover'); const idItem = ev.dataTransfer.getData("text"); const elemento = document.getElementById(idItem); procesarClasificacion(elemento, ev.currentTarget, gameCode); }
+
+    function handleTouchMove(e) { if (!draggedElementRef) return; e.preventDefault(); let touch = e.touches[0]; draggedElementRef.style.position = 'fixed'; draggedElementRef.style.left = (touch.clientX - 20) + 'px'; draggedElementRef.style.top = (touch.clientY - 20) + 'px'; draggedElementRef.style.zIndex = '1000'; }
+    function handleTouchEnd(e, spawnZoneId) { if (!draggedElementRef) return; draggedElementRef.style.position = 'static'; draggedElementRef.style.zIndex = 'auto'; let touch = e.changedTouches[0]; let dropTarget = document.elementFromPoint(touch.clientX, touch.clientY); let zone = dropTarget ? dropTarget.closest('.dropzone-box') : null; let gameCode = 'game3'; if (spawnZoneId === 'tools-spawn-zone') gameCode = 'game4'; if (spawnZoneId === 'sizes-spawn-zone') gameCode = 'game5'; if (zone) { procesarClasificacion(draggedElementRef, zone, gameCode); } draggedElementRef = null; }
+
+    function procesarClasificacion(elemento, destino, gameCode) {
+        if(!elemento || !destino) return;
+        const targetCorrecto = elemento.getAttribute('data-target-correcto');
+        const destinoId = destino.getAttribute('data-targetid');
+        let feedbackNum = '3';
+        if (gameCode === 'game4') feedbackNum = '4'; if (gameCode === 'game5') feedbackNum = '5';
+        const feedback = document.getElementById('feedback-' + feedbackNum);
+
+        if (targetCorrecto === destinoId) {
+            feedback.innerHTML = "<span class='success'>¡Excelente! 👏</span>";
+            elemento.remove(); activeItemsCount--;
+            playGlobalSuccess();
+
+            if (activeItemsCount === 0) {
+                if(gameCode === 'game3') feedback.innerHTML = "<span class='success'>¡SÚPER! Limpiaste todo el lugar junto a Sacha. 🌿🏆</span>";
+                else if(gameCode === 'game4') feedback.innerHTML = "<span class='success'>¡TRABAJO TERMINADO! Sacha y sus amigos están felices. 👨‍🏫💼🏆</span>";
+                else feedback.innerHTML = "<span class='success'>¡FANTÁSTICO! Todo quedó perfectamente ordenado. 📏🏆</span>";
+                document.getElementById('btn-next-' + feedbackNum).style.display = "inline-block";
+            }
+        } else { 
+            feedback.innerHTML = "<span class='error'>❌ ¡Ahí no corresponde!</span>"; 
+            playGlobalError();
+        }
+    }
+
+    function nextRoundGame6() {
+        if(currentAudio) currentAudio.pause();
+        document.getElementById('feedback-6').innerHTML = "";
+        document.getElementById('btn-next-6').style.display = "none";
+        currentClassroomCase = situacionesAula[Math.floor(Math.random() * situacionesAula.length)];
+ inversion:     document.getElementById('classroom-emoji').innerText = currentClassroomCase.emoji;
+        document.getElementById('classroom-text').innerText = currentClassroomCase.text;
+    }
+
+    function playClassroomSound() {
+        if(currentAudio) currentAudio.pause();
+        currentAudio = new Audio(currentClassroomCase.audio); currentAudio.play().catch(e => {});
+    }
+
+    function checkBehaviorAnswer(userSelectedTrue) {
+        const feedback = document.getElementById('feedback-6');
+        
+        if (userSelectedTrue === currentClassroomCase.isGood) {
+            feedback.innerHTML = "<span class='success'>¡EXCELENTE DECISIÓN! Sacha está orgulloso. 🏆</span>";
+            document.getElementById('btn-next-6').style.display = "inline-block";
+            playGlobalSuccess();
+        } else {
+            feedback.innerHTML = "<span class='error'>❌ ¡Esa conducta causa problemas, piénsalo otra vez!</span>";
+            playGlobalError();
+        }
+    }
+</script>
+
+</body>
+</html>
