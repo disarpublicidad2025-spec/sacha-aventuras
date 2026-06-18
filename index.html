@@ -10,7 +10,6 @@
         * {
             box-sizing: border-box;
             font-family: 'Press Start 2P', monospace;
-            /* Previene zooms o retrasos accidentales al presionar botones en móviles */
             touch-action: manipulation;
         }
 
@@ -87,6 +86,12 @@
         button:active {
             box-shadow: 0px 0px 0px;
             transform: translate(4px, 4px);
+        }
+
+        button:disabled {
+            background-color: #ccc !important;
+            box-shadow: 4px 4px 0px #999 !important;
+            cursor: not-allowed;
         }
 
         .sacha-avatar {
@@ -200,7 +205,7 @@
             cursor: grab;
             user-select: none;
             transition: transform 0.1s;
-            touch-action: none; /* Permite arrastrar en móviles sin desplazar la página web */
+            touch-action: none;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -221,9 +226,9 @@
         .dropzone-box {
             border: 4px solid #000;
             border-radius: 8px;
-            padding: 10px 4px;
+            padding: 10px 2px;
             color: white;
-            font-size: 6px;
+            font-size: 5px;
             line-height: 1.4;
             min-height: 115px;
             display: flex;
@@ -277,13 +282,21 @@
         .success { color: green; }
         .error { color: red; }
 
+        .score-board {
+            font-size: 2.2vw;
+            margin-bottom: 10px;
+            color: #333;
+            display: flex;
+            justify-content: space-around;
+            font-weight: bold;
+        }
+
         .disar-footer {
             margin-top: 25px;
             font-size: 8px;
             color: #777;
         }
 
-        /* --- MEDIA QUERIES PARA PANTALLAS GRANDES (ESCRITORIO / PC) --- */
         @media (min-width: 600px) {
             #game-container { padding: 20px 25px; }
             h1 { font-size: 18px; }
@@ -299,6 +312,7 @@
             .classroom-text-card { font-size: 12px; padding: 20px; }
             .btn-behavior { font-size: 11px; padding: 20px 10px; }
             [id^="feedback-"] { font-size: 12px; }
+            .score-board { font-size: 10px; }
         }
     </style>
 </head>
@@ -306,10 +320,8 @@
 
 <div id="game-container">
 
-    <!-- 1. PANTALLA DE INICIO -->
     <div id="screen-home" class="screen active">
         <div class="sacha-avatar" style="border-radius: 0; background-color: transparent; border: none; width: auto; height: auto;">
-            <!-- AQUÍ SE CARGA TU IMAGEN -->
             <img src="mascota.png" alt="Sacha" style="width: 120px; height: auto; image-rendering: pixelated;">
             <div class="sacha-badge" style="bottom: -15px;">DISAR</div>
         </div>
@@ -320,7 +332,6 @@
         <button onclick="changeScreen('screen-menu')">JUGAR</button>
     </div>
 
-    <!-- 2. SUBMENU DE MINIJUEGOS -->
     <div id="screen-menu" class="screen">
         <h2>Menú de Minijuegos</h2>
         <div style="display: flex; flex-direction: column; align-items: center;">
@@ -335,58 +346,69 @@
         <button onclick="changeScreen('screen-home')" style="background-color: #d9534f; box-shadow: 4px 4px 0px #b52b27;">Atrás</button>
     </div>
 
-    <!-- MINIJUEGO 1 -->
     <div id="screen-game1" class="screen">
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid #000; padding-bottom: 10px;">
             <span style="font-size: 8px; color: #1d71b8;">Sacha Educa 🐆</span>
             <button onclick="changeScreen('screen-menu')" style="margin:0; padding: 5px; font-size: 8px; background-color: #d9534f; box-shadow: 2px 2px 0px #b52b27;">Salir</button>
         </div>
         <br>
+        <div class="score-board">
+            <span id="game1-score">Aciertos: 0/6</span>
+            <span id="game1-lives">Vidas: ❤️❤️❤️</span>
+        </div>
         <div id="question-text-1" class="question-box">¿Qué animal es el...?</div>
         <div class="game-flex">
             <div class="animal-card">
                 <div id="emoji-left" class="display-emoji">🦁</div>
-                <button class="btn-sound" onclick="playAnimalSound('left')">🔊 Escucha</button>
-                <button class="btn-select" onclick="checkAnswer1('left')">¡Es este!</button>
+                <button id="btn-sound-left" class="btn-sound" onclick="playAnimalSound('left')">🔊 Escucha</button>
+                <button id="btn-select-left" class="btn-select" onclick="checkAnswer1('left')">¡Es este!</button>
             </div>
             <div class="animal-card">
                 <div id="emoji-right" class="display-emoji">🐷</div>
-                <button class="btn-sound" onclick="playAnimalSound('right')">🔊 Escucha</button>
-                <button class="btn-select" onclick="checkAnswer1('right')">¡Es este!</button>
+                <button id="btn-sound-right" class="btn-sound" onclick="playAnimalSound('right')">🔊 Escucha</button>
+                <button id="btn-select-right" class="btn-select" onclick="checkAnswer1('right')">¡Es este!</button>
             </div>
         </div>
         <div id="feedback-1"></div>
         <button id="btn-next-1" onclick="nextRoundGame1()" style="display: none; background-color: #5cb85c; box-shadow: 4px 4px 0px #3e8e41;">Siguiente</button>
+        <button id="btn-reset-1" onclick="resetGame1()" style="display: none; background-color: #d9534f; box-shadow: 4px 4px 0px #b52b27;">¡Jugar de nuevo!</button>
     </div>
 
-    <!-- MINIJUEGO 2 -->
     <div id="screen-game2" class="screen">
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid #000; padding-bottom: 10px;">
             <span style="font-size: 8px; color: #1d71b8;">Sacha Rutas 🐆</span>
             <button onclick="changeScreen('screen-menu')" style="margin:0; padding: 5px; font-size: 8px; background-color: #d9534f; box-shadow: 2px 2px 0px #b52b27;">Salir</button>
         </div>
         <br>
+        <div class="score-board">
+            <span id="game2-score">Aciertos: 0/6</span>
+            <span id="game2-lives">Vidas: ❤️❤️❤️</span>
+        </div>
         <div class="question-box" style="color: #1d71b8; background-color: #e3f2fd;">¿Por dónde debe ir este transporte?</div>
         <div class="card-center">
             <div id="transport-emoji" class="display-emoji">🚢</div>
             <button class="btn-sound" onclick="playTransportSound()" style="width: auto; padding: 10px 20px;">🔊 Escuchar</button>
         </div>
         <div class="options-container">
-            <button class="btn-option" onclick="checkAnswer2('el aire')">El Aire ☁️</button>
-            <button class="btn-option" onclick="checkAnswer2('la carretera')">La Carretera 🛣️</button>
-            <button class="btn-option" onclick="checkAnswer2('el río')">El Río 🌊</button>
+            <button id="btn-opt-air" class="btn-option" onclick="checkAnswer2('el aire')">El Aire ☁️</button>
+            <button id="btn-opt-road" class="btn-option" onclick="checkAnswer2('la carretera')">La Carretera 🛣️</button>
+            <button id="btn-opt-river" class="btn-option" onclick="checkAnswer2('el río')">El Río 🌊</button>
         </div>
         <div id="feedback-2"></div>
         <button id="btn-next-2" onclick="nextRoundGame2()" style="display: none; background-color: #5cb85c; box-shadow: 4px 4px 0px #3e8e41;">Siguiente</button>
+        <button id="btn-reset-2" onclick="resetGame2()" style="display: none; background-color: #d9534f; box-shadow: 4px 4px 0px #b52b27;">¡Jugar de nuevo!</button>
     </div>
 
-    <!-- MINIJUEGO 3 -->
     <div id="screen-game3" class="screen">
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid #000; padding-bottom: 10px;">
             <span style="font-size: 8px; color: #2e7d32;">Sacha Planeta 🌿</span>
             <button onclick="changeScreen('screen-menu')" style="margin:0; padding: 5px; font-size: 8px; background-color: #d9534f; box-shadow: 2px 2px 0px #b52b27;">Salir</button>
         </div>
         <br>
+        <div class="score-board">
+            <span id="game3-score">Aciertos: 0/18</span>
+            <span id="game3-lives">Vidas: ❤️❤️❤️</span>
+        </div>
         <div class="question-box" style="color: #2e7d32; background-color: #e8f5e9; margin-bottom: 10px;">¡Arrastra los desperdicios al tacho correcto!</div>
         <p style="font-size: 7px; margin-bottom: 15px; color: #555;">(Haz clic para escuchar el sonido del material)</p>
 
@@ -404,46 +426,42 @@
             </div>
         </div>
         <div id="feedback-3"></div>
-        <button id="btn-next-3" onclick="nextRoundGame3()" style="display: none; background-color: #5cb85c; box-shadow: 4px 4px 0px #3e8e41;">¡Jugar de nuevo!</button>
+        <button id="btn-next-3" onclick="nextRoundGame3()" style="display: none; background-color: #5cb85c; box-shadow: 4px 4px 0px #3e8e41;">Siguiente Ronda ➡️</button>
+        <button id="btn-reset-3" onclick="resetGame3()" style="display: none; background-color: #d9534f; box-shadow: 4px 4px 0px #b52b27;">¡Jugar de nuevo!</button>
     </div>
 
-    <!-- MINIJUEGO 4 -->
     <div id="screen-game4" class="screen">
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid #000; padding-bottom: 10px;">
             <span style="font-size: 8px; color: #b0003a;">Sacha Oficios 🛠️</span>
             <button onclick="changeScreen('screen-menu')" style="margin:0; padding: 5px; font-size: 8px; background-color: #d9534f; box-shadow: 2px 2px 0px #b52b27;">Salir</button>
         </div>
         <br>
+        <div class="score-board">
+            <span id="game4-score">Ronda: 1/3</span>
+            <span id="game4-lives">Vidas: ❤️❤️❤️</span>
+        </div>
         <div class="question-box" style="color: #b0003a; background-color: #fce4ec; margin-bottom: 10px;">¡Reparte las herramientas al profesional correcto!</div>
         <p style="font-size: 7px; margin-bottom: 15px; color: #555;">(Haz clic en cada herramienta para escucharla)</p>
 
         <div id="tools-spawn-zone" class="spawn-zone" style="border-color: #b0003a; background: #fce4ec;"></div>
 
-        <div class="targets-container">
-            <div class="dropzone-box width-4 color-rojo" data-targetid="bombero" ondragover="allowDrop(event)" ondragleave="clearHover(event)" ondrop="dropItem(event, 'game4')">
-                BOMBERO <span class="display-profesional">👨‍🚒</span>
-            </div>
-            <div class="dropzone-box width-4 color-azul" data-targetid="doctor" ondragover="allowDrop(event)" ondragleave="clearHover(event)" ondrop="dropItem(event, 'game4')">
-                DOCTOR <span class="display-profesional">👩‍⚕️</span>
-            </div>
-            <div class="dropzone-box width-4 color-amarillo" data-targetid="constructor" ondragover="allowDrop(event)" ondragleave="clearHover(event)" ondrop="dropItem(event, 'game4')">
-                CONST. <span class="display-profesional">👷‍♂️</span>
-            </div>
-            <div class="dropzone-box width-4 color-morado" data-targetid="profesor" ondragover="allowDrop(event)" ondragleave="clearHover(event)" ondrop="dropItem(event, 'game4')">
-                PROFE. <span class="display-profesional">👨‍🏫</span>
-            </div>
-        </div>
+        <div id="profesionales-targets-container" class="targets-container"></div>
+        
         <div id="feedback-4"></div>
-        <button id="btn-next-4" onclick="nextRoundGame4()" style="display: none; background-color: #5cb85c; box-shadow: 4px 4px 0px #3e8e41;">¡Jugar de nuevo!</button>
+        <button id="btn-next-4" onclick="nextRoundGame4()" style="display: none; background-color: #5cb85c; box-shadow: 4px 4px 0px #3e8e41;">Siguiente Ronda ➡️</button>
+        <button id="btn-reset-4" onclick="resetGame4()" style="display: none; background-color: #d9534f; box-shadow: 4px 4px 0px #b52b27;">¡Jugar de nuevo!</button>
     </div>
 
-    <!-- MINIJUEGO 5 -->
     <div id="screen-game5" class="screen">
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid #000; padding-bottom: 10px;">
             <span style="font-size: 8px; color: #e64a19;">Sacha Tamaños 📏</span>
             <button onclick="changeScreen('screen-menu')" style="margin:0; padding: 5px; font-size: 8px; background-color: #d9534f; box-shadow: 2px 2px 0px #b52b27;">Salir</button>
         </div>
-        <br>
+       <br>
+        <div class="score-board">
+            <span id="game5-score">Aciertos: 0/18</span>
+            <span id="game5-lives">Vidas: ❤️❤️❤️</span>
+        </div>
         <div class="question-box" style="color: #e64a19; background-color: #fff3e0; margin-bottom: 10px;">¡Ordena por tamaño de pequeño a grande!</div>
         <p style="font-size: 7px; margin-bottom: 15px; color: #555;">(Haz clic para escuchar el sonido real)</p>
 
@@ -458,19 +476,23 @@
             </div>
             <div class="dropzone-box width-3 color-naranja" data-targetid="grande" ondragover="allowDrop(event)" ondragleave="clearHover(event)" ondrop="dropItem(event, 'game5')">
                 GRANDE <span>🗳️</span>
-            </div>
+          </div>
         </div>
-        <div id="feedback-5"></div>
-        <button id="btn-next-5" onclick="nextRoundGame5()" style="display: none; background-color: #5cb85c; box-shadow: 4px 4px 0px #3e8e41;">¡Siguiente Ronda!</button>
+       <div id="feedback-5"></div>
+       <button id="btn-next-5" onclick="nextRoundGame5()" style="display: none; background-color: #5cb85c; box-shadow: 4px 4px 0px #3e8e41;">¡Siguiente Ronda!</button>
+       <button id="btn-reset-5" onclick="resetGame5()" style="display: none; background-color: #d9534f; box-shadow: 4px 4px 0px #b52b27;">¡Jugar de nuevo!</button>
     </div>
 
-    <!-- MINIJUEGO 6 -->
     <div id="screen-game6" class="screen">
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid #000; padding-bottom: 10px;">
             <span style="font-size: 8px; color: #7b1fa2;">Sacha Aula 🏫</span>
             <button onclick="changeScreen('screen-menu')" style="margin:0; padding: 5px; font-size: 8px; background-color: #d9534f; box-shadow: 2px 2px 0px #b52b27;">Salir</button>
         </div>
-        <br>
+       <br>
+        <div class="score-board">
+            <span id="game6-score">Aciertos: 0/6</span>
+            <span id="game6-lives">Vidas: ❤️❤️❤️</span>
+        </div>
         <div class="question-box" style="color: #7b1fa2; background-color: #f3e5f5; margin-bottom: 15px;">¿Qué debe hacer Sacha en esta situación?</div>
 
         <div class="classroom-text-card">
@@ -480,12 +502,13 @@
         </div>
 
         <div class="game-flex" style="margin-top: 10px;">
-            <button class="btn-behavior color-verde" onclick="checkBehaviorAnswer(true)">😊 ¡BIEN!</button>
-            <button class="btn-behavior color-rojo" onclick="checkBehaviorAnswer(false)">😢 ¡ASÍ NO!</button>
+            <button id="btn-behavior-good" class="btn-behavior color-verde" onclick="checkBehaviorAnswer(true)">😊 ¡BIEN!</button>
+            <button id="btn-behavior-bad" class="btn-behavior color-rojo" onclick="checkBehaviorAnswer(false)">😢 ¡ASÍ NO!</button>
         </div>
 
         <div id="feedback-6"></div>
         <button id="btn-next-6" onclick="nextRoundGame6()" style="display: none; background-color: #5cb85c; box-shadow: 4px 4px 0px #3e8e41;">Siguiente Caso</button>
+        <button id="btn-reset-6" onclick="resetGame6()" style="display: none; background-color: #d9534f; box-shadow: 4px 4px 0px #b52b27;">¡Jugar de nuevo!</button>
     </div>
 
     <div class="disar-footer">DISAR © 2026</div>
@@ -494,6 +517,32 @@
 <script>
     let currentAudio = null;
     let draggedElementRef = null;
+    let activeItemsCount = 0;
+
+    // Variables globales para puntuaciones
+    let game1CorrectCount = 0;
+    let game1Lives = 3;
+
+    let game2CorrectCount = 0;
+    let game2Lives = 3;
+
+    let game3CorrectCount = 0;
+    let game3Lives = 3;
+    let game3Pool = [];
+
+    let game4RoundIndex = 0; 
+    let game4Lives = 3;
+    let game4ItemsRemaining = 0;
+    let currentRoundProfessionals = [];
+
+    let game5CorrectCount = 0;
+    let game5Lives = 3;
+    let indiceRondaTamaño = 0; 
+
+    // MODIFICACIÓN MINIJUEGO 6: Variables globales para el control del sistema de vidas/puntos
+    let game6CorrectCount = 0;
+    let game6Lives = 3;
+    let situacionesFiltradas = [];
 
     const salvajes = [
         { emoji: '🦁', type: 'salvaje', audio: 'sonidos/leon.mp3' },
@@ -507,49 +556,84 @@
         { emoji: '🐱', type: 'domestico', audio: 'sonidos/gato.mp3' },
         { emoji: '🐮', type: 'domestico', audio: 'sonidos/vaca.mp3' }
     ];
+
     const transportes = [
-        { emoji: '🚢', name: 'barco', correctWay: 'el río', audio: 'sonidos/barco.mp3' },
+        { emoji: '🚢', name: 'barco', correctWay: 'el río', audio: 'sonidos/bote.mp3' },
         { emoji: '🚗', name: 'auto', correctWay: 'la carretera', audio: 'sonidos/auto.mp3' },
-        { emoji: '🛩️', name: 'avioneta', correctWay: 'el aire', audio: 'sonidos/avioneta.mp3' }
+        { emoji: '🛩️', name: 'avioneta', correctWay: 'el aire', audio: 'sonidos/avioneta.mp3' },
+        { emoji: '🚲', name: 'bicicleta', correctWay: 'la carretera', audio: 'sonidos/bicicleta.mp3' },
+        { emoji: '✈️', name: 'avion', correctWay: 'el aire', audio: 'sonidos/avioneta.mp3' },
+        { emoji: '⛵', name: 'bote', correctWay: 'el río', audio: 'sonidos/barco.mp3' },
+        { emoji: '🏍️', name: 'moto', correctWay: 'la carretera', audio: 'sonidos/moto.mp3' },
+        { emoji: '🚁', name: 'helicoptero', correctWay: 'el aire', audio: 'sonidos/helicoptero.mp3' },
+        { emoji: '🛶', name: 'canoa', correctWay: 'el río', audio: 'sonidos/barco.mp3' }
     ];
-    const residuosBase = [
+
+    const todosLosResiduos = [
         { id: 'g1', emoji: '🍌', tacho: 'verde', audio: 'sonidos/organico.mp3' },
         { id: 'g2', emoji: '🍎', tacho: 'verde', audio: 'sonidos/organico.mp3' },
-        { id: 'g3', emoji: '📰', tacho: 'azul', audio: 'sonidos/papel.mp3' },
-        { id: 'g4', emoji: '📦', tacho: 'azul', audio: 'sonidos/papel.mp3' },
-        { id: 'g5', emoji: '🍼', tacho: 'amarillo', audio: 'sonidos/plastico.mp3' },
-        { id: 'g6', emoji: '🥤', tacho: 'amarillo', audio: 'sonidos/plastico.mp3' }
+        { id: 'g3', emoji: '🍉', tacho: 'verde', audio: 'sonidos/organico.mp3' },
+        { id: 'g4', emoji: '🥕', tacho: 'verde', audio: 'sonidos/organico.mp3' },
+        { id: 'g5', emoji: '🥑', tacho: 'verde', audio: 'sonidos/organico.mp3' },
+        { id: 'g6', emoji: '🍍', tacho: 'verde', audio: 'sonidos/organico.mp3' },
+        { id: 'g7', emoji: '📰', tacho: 'azul', audio: 'sonidos/papel.mp3' },
+        { id: 'g8', emoji: '📦', tacho: 'azul', audio: 'sonidos/papel.mp3' },
+        { id: 'g9', emoji: '📝', tacho: 'azul', audio: 'sonidos/papel.mp3' },
+        { id: 'g10', emoji: '📚', tacho: 'azul', audio: 'sonidos/papel.mp3' },
+        { id: 'g11', emoji: '✉️', tacho: 'azul', audio: 'sonidos/papel.mp3' },
+        { id: 'g12', emoji: '🏷️', tacho: 'azul', audio: 'sonidos/papel.mp3' },
+        { id: 'g13', emoji: '🍼', tacho: 'amarillo', audio: 'sonidos/plastico.mp3' },
+        { id: 'g14', emoji: '🥤', tacho: 'amarillo', audio: 'sonidos/plastico.mp3' },
+        { id: 'g15', emoji: '🛍️', tacho: 'amarillo', audio: 'sonidos/plastico.mp3' },
+        { id: 'g16', emoji: '🧸', tacho: 'amarillo', audio: 'sonidos/plastico.mp3' },
+        { id: 'g17', emoji: '🫙', tacho: 'amarillo', audio: 'sonidos/plastico.mp3' },
+        { id: 'g18', emoji: '🎈', tacho: 'amarillo', audio: 'sonidos/plastico.mp3' }
     ];
-    const herramientasBase = [
-        { id: 't1', emoji: '🚒', target: 'bombero', audio: 'sonidos/bombero.mp3' },
-        { id: 't2', emoji: '🚑', target: 'doctor', audio: 'sonidos/ambulancia.mp3' },
-        { id: 't3', emoji: '🛠️', target: 'constructor', audio: 'sonidos/martillo.mp3' },
-        { id: 't4', emoji: '📚', target: 'profesor', audio: 'sonidos/campana.mp3' },
-        { id: 't5', emoji: '🦺', target: 'constructor', audio: 'sonidos/martillo.mp3' },
-        { id: 't6', emoji: '📐', target: 'profesor', audio: 'sonidos/campana.mp3' },
-        { id: 't7', emoji: '🔥', target: 'bombero', audio: 'sonidos/bombero.mp3' } 
+
+    const poolRondasOficios = [
+        [
+            { id: 'bombero', label: 'BOMBERO', emoji: '👨‍🚒', color: 'color-rojo', tools: [{id:'t1', emoji:'🚒', audio:'sonidos/bombero.mp3'}, {id:'t2', emoji:'🔥', audio:'sonidos/bombero.mp3'}] },
+            { id: 'doctor', label: 'DOCTOR', emoji: '👩‍⚕️', color: 'color-azul', tools: [{id:'t3', emoji:'🚑', audio:'sonidos/ambulancia.mp3'}, {id:'t4', emoji:'🩺', audio:'sonidos/ambulancia.mp3'}] },
+            { id: 'constructor', label: 'CONST.', emoji: '👷‍♂️', color: 'color-amarillo', tools: [{id:'t5', emoji:'🛠️', audio:'sonidos/martillo.mp3'}, {id:'t6', emoji:'🦺', audio:'sonidos/martillo.mp3'}] },
+            { id: 'profesor', label: 'PROFE.', emoji: '👨‍🏫', color: 'color-morado', tools: [{id:'t7', emoji:'📚', audio:'sonidos/campana.mp3'}, {id:'t8', emoji:'📐', audio:'sonidos/campana.mp3'}] }
+        ],
+        [
+            { id: 'cocinero', label: 'CHEF', emoji: '👨‍🍳', color: 'color-naranja', tools: [{id:'t9', emoji:'🍳', audio:'sonidos/cocinar.mp3'}, {id:'t10', emoji:'🥕', audio:'sonidos/cocinar.mp3'}] },
+            { id: 'policia', label: 'POLICÍA', emoji: '👮‍♂️', color: 'color-azul', tools: [{id:'t11', emoji:'🚔', audio:'sonidos/policia.mp3'}, {id:'t12', emoji:'🛡️', audio:'sonidos/policia.mp3'}] },
+            { id: 'astronauta', label: 'ASTRO.', emoji: '👨‍🚀', color: 'color-morado', tools: [{id:'t13', emoji:'🚀', audio:'sonidos/cohete.mp3'}, {id:'t14', emoji:'🛸', audio:'sonidos/cohete.mp3'}] },
+            { id: 'pintor', label: 'PINTOR', emoji: '👨‍🎨', color: 'color-amarillo', tools: [{id:'t15', emoji:'🎨', audio:'sonidos/pintar.mp3'}, {id:'t16', emoji:'🖌️', audio:'sonidos/pintar.mp3'}] }
+        ],
+        [
+            { id: 'mecanico', label: 'MECÁNICO', emoji: '👨‍🔧', color: 'color-rojo', tools: [{id:'t17', emoji:'🔧', audio:'sonidos/martillo.mp3'}, {id:'t18', emoji:'🛞', audio:'sonidos/auto.mp3'}] },
+            { id: 'granjero', label: 'GRANJERO', emoji: '👨‍🌾', color: 'color-verde', tools: [{id:'t19', emoji:'🚜', audio:'sonidos/vaca.mp3'}, {id:'t20', emoji:'🌾', audio:'sonidos/vaca.mp3'}] },
+            { id: 'cientifico', label: 'CIENTÍF.', emoji: '👨‍🔬', color: 'color-azul', tools: [{id:'t21', emoji:'🧪', audio:'sonidos/agua.mp3'}, {id:'t22', emoji:'🔬', audio:'sonidos/agua.mp3'}] },
+            { id: 'musico', label: 'MÚSICO', emoji: '👨‍🎤', color: 'color-naranja', tools: [{id:'t23', emoji:'🎸', audio:'sonidos/musica.mp3'}, {id:'t24', emoji:'🎹', audio:'sonidos/musica.mp3'}] }
+        ]
     ];
 
     const rondasTamaños = [
-        [{ id: 's1', emoji: '🐘', target: 'grande', sizeStyle: '40px', audio: 'sonidos/elefante.mp3' }, { id: 's2', emoji: '🦁', target: 'mediano', sizeStyle: '30px', audio: 'sonidos/leon.mp3' }, { id: 's3', emoji: '🐇', target: 'pequeño', sizeStyle: '20px', audio: 'sonidos/conejo.mp3' }],
-        [{ id: 's4', emoji: '🏠', target: 'grande', sizeStyle: '40px', audio: 'sonidos/casa.mp3' }, { id: 's5', emoji: '🌲', target: 'mediano', sizeStyle: '30px', audio: 'sonidos/arbol.mp3' }, { id: 's6', emoji: '⚽', target: 'pequeño', sizeStyle: '18px', audio: 'sonidos/pelota.mp3' }],
-        [{ id: 's7', emoji: '🦒', target: 'grande', sizeStyle: '42px', audio: 'sonidos/jirafa.mp3' }, { id: 's8', emoji: '🐒', target: 'mediano', sizeStyle: '28px', audio: 'sonidos/mono.mp3' }, { id: 's9', emoji: '🐭', target: 'pequeño', sizeStyle: '18px', audio: 'sonidos/raton.mp3' }],
-        [{ id: 's10', emoji: '🚛', target: 'grande', sizeStyle: '40px', audio: 'sonidos/camion.mp3' }, { id: 's11', emoji: '🚲', target: 'mediano', sizeStyle: '28px', audio: 'sonidos/bicicleta.mp3' }, { id: 's12', emoji: '🔑', target: 'pequeño', sizeStyle: '18px', audio: 'sonidos/llave.mp3' }]
+        [{ id: 's1', emoji: '🐘', target: 'grande', sizeStyle: '42px', audio: 'sonidos/elefante.mp3' }, { id: 's2', emoji: '🦁', target: 'mediano', sizeStyle: '30px', audio: 'sonidos/leon.mp3' }, { id: 's3', emoji: '🐇', target: 'pequeño', sizeStyle: '18px', audio: 'sonidos/conejo.mp3' }],
+        [{ id: 's4', emoji: '🏠', target: 'grande', sizeStyle: '42px', audio: 'sonidos/casa.mp3' }, { id: 's5', emoji: '🌲', target: 'mediano', sizeStyle: '30px', audio: 'sonidos/arbol.mp3' }, { id: 's6', emoji: '⚽', target: 'pequeño', sizeStyle: '18px', audio: 'sonidos/pelota.mp3' }],
+        [{ id: 's7', emoji: '🦒', target: 'grande', sizeStyle: '44px', audio: 'sonidos/jirafa.mp3' }, { id: 's8', emoji: '🐒', target: 'mediano', sizeStyle: '28px', audio: 'sonidos/mono.mp3' }, { id: 's9', emoji: '🐭', target: 'pequeño', sizeStyle: '18px', audio: 'sonidos/raton.mp3' }],
+        [{ id: 's10', emoji: '🚛', target: 'grande', sizeStyle: '42px', audio: 'sonidos/camion.mp3' }, { id: 's11', emoji: '🚲', target: 'mediano', sizeStyle: '28px', audio: 'sonidos/bicicleta.mp3' }, { id: 's12', emoji: '🔑', target: 'pequeño', sizeStyle: '18px', audio: 'sonidos/llave.mp3' }],
+        [{ id: 's13', emoji: '🐳', target: 'grande', sizeStyle: '44px', audio: 'sonidos/ballena.mp3' }, { id: 's14', emoji: '🦘', target: 'mediano', sizeStyle: '28px', audio: 'sonidos/canguro.mp3' }, { id: 's15', emoji: '🪰', target: 'pequeño', sizeStyle: '16px', audio: 'sonidos/mosca.mp3' }],
+        [{ id: 's16', emoji: '🚀', target: 'grande', sizeStyle: '42px', audio: 'sonidos/cohete.mp3' }, { id: 's17', emoji: '🎸', target: 'mediano', sizeStyle: '30px', audio: 'sonidos/guitarra.mp3' }, { id: 's18', emoji: '💍', target: 'pequeño', sizeStyle: '18px', audio: 'sonidos/anillo.mp3' }]
     ];
 
+    // MODIFICACIÓN MINIJUEGO 6: Pull ampliado a 10 situaciones (Las 4 base originales + 6 situaciones adicionales extra)
     const situacionesAula = [
         { emoji: '🙋‍♂️', text: 'El profesor hace una pregunta y yo sé la respuesta correcta. ¿Debo levantar la mano y esperar mi turno?', isGood: true, audio: 'sonidos/campana.mp3' },
         { emoji: '🏃‍♂️', text: 'Quiero salir rápido al recreo. ¿Está bien correr empujando a mis compañeros en el pasillo?', isGood: false, audio: 'sonidos/campana.mp3' },
         { emoji: '🤫', text: 'Un compañero está exponiendo su dibujo al frente de la clase. ¿Debo guardar silencio y escuchar con atención?', isGood: true, audio: 'sonidos/campana.mp3' },
-        { emoji: '🎒', text: 'Terminó la clase de pintura. ¿Dejo las pinturas tiradas en el piso del aula?', isGood: false, audio: 'sonidos/campana.mp3' }
+        { emoji: '🎒', text: 'Terminó la clase de pintura. ¿Dejo las pinturas tiradas en el piso del aula?', isGood: false, audio: 'sonidos/campana.mp3' },
+        // Nuevas 6 situaciones añadidas:
+        { emoji: '🍏', text: 'Tengo basura de mi colación o refrigerio. ¿Es correcto guardarla y botarla en el basurero del aula?', isGood: true, audio: 'sonidos/campana.mp3' },
+        { emoji: '✏️', text: 'Sacha necesita un lápiz de color y no tiene. ¿Está bien tomar un color de la cartuchera de mi compañero sin pedir permiso?', isGood: false, audio: 'sonidos/campana.mp3' },
+        { emoji: '🤝', text: 'Un compañero nuevo se integró a la clase hoy. ¿Debo invitarlo a jugar conmigo durante el recreo?', isGood: true, audio: 'sonidos/campana.mp3' },
+        { emoji: '🗣️', text: 'La profesora está explicando la tarea en la pizarra. ¿Está bien ponerme a gritar o hablar muy fuerte con mi amigo?', isGood: false, audio: 'sonidos/campana.mp3' },
+        { emoji: '🪑', text: 'Para cuidar mi salón de clases y mi seguridad, ¿debo sentarme bien en la silla sin mecerme ni dañarla?', isGood: true, audio: 'sonidos/campana.mp3' },
+        { emoji: '🤬', text: 'Estoy enojado porque perdí en un juego de mesa del aula. ¿Está bien insultar o gritarles a mis compañeros?', isGood: false, audio: 'sonidos/campana.mp3' }
     ];
-
-    let currentRoundData1 = {};
-    let targetType1 = 'salvaje';
-    let currentTransport = {};
-    let activeItemsCount = 0;
-    let indiceRondaTamaño = 0;
-    let currentClassroomCase = {};
 
     function playGlobalSuccess() {
         let snd = new Audio('sonidos/victoria.mp3');
@@ -566,18 +650,44 @@
         document.querySelectorAll('.screen').forEach(screen => screen.classList.remove('active'));
         document.getElementById(screenId).classList.add('active');
         
-        if(screenId === 'screen-game1') nextRoundGame1();
-        if(screenId === 'screen-game2') nextRoundGame2();
-        if(screenId === 'screen-game3') nextRoundGame3();
-        if(screenId === 'screen-game4') nextRoundGame4();
-        if(screenId === 'screen-game5') nextRoundGame5();
-        if(screenId === 'screen-game6') nextRoundGame6();
+        if(screenId === 'screen-game1') resetGame1();
+        if(screenId === 'screen-game2') resetGame2();
+        if(screenId === 'screen-game3') resetGame3();
+        if(screenId === 'screen-game4') resetGame4(); 
+        if(screenId === 'screen-game5') resetGame5(); 
+        if(screenId === 'screen-game6') resetGame6(); // Inicialización limpia completa del juego 6
+    }
+
+    /* ================= LÓGICA MINIJUEGO 1 ================= */
+    function resetGame1() {
+        game1CorrectCount = 0;
+        game1Lives = 3;
+        document.getElementById('btn-reset-1').style.display = "none";
+        setGame1ButtonsDisabled(false);
+        updateGame1Scoreboard();
+        nextRoundGame1();
+    }
+
+    function updateGame1Scoreboard() {
+        document.getElementById('game1-score').innerText = "Aciertos: " + game1CorrectCount + "/6";
+        let hearts = "";
+        for(let i=0; i<3; i++) { hearts += (i < game1Lives) ? "❤️" : "🖤"; }
+        document.getElementById('game1-lives').innerText = "Vidas: " + hearts;
+    }
+
+    function setGame1ButtonsDisabled(disabledStatus) {
+        document.getElementById('btn-select-left').disabled = disabledStatus;
+        document.getElementById('btn-select-right').disabled = disabledStatus;
     }
 
     function nextRoundGame1() {
         if(currentAudio) currentAudio.pause();
         document.getElementById('feedback-1').innerHTML = "";
         document.getElementById('btn-next-1').style.display = "none";
+        
+        if (game1CorrectCount >= 6 || game1Lives <= 0) return;
+
+        setGame1ButtonsDisabled(false);
         targetType1 = Math.random() < 0.5 ? 'salvaje' : 'domestico';
         const qText = document.getElementById('question-text-1');
         if(targetType1 === 'salvaje') {
@@ -599,20 +709,69 @@
     }
 
     function checkAnswer1(side) {
+        setGame1ButtonsDisabled(true);
+
         if (currentRoundData1[side].type === targetType1) {
-            document.getElementById('feedback-1').innerHTML = "<span class='success'>¡BIEN HECHO! 🏆</span>";
-            document.getElementById('btn-next-1').style.display = "inline-block";
+            game1CorrectCount++;
+            updateGame1Scoreboard();
             playGlobalSuccess();
+
+            if (game1CorrectCount >= 6) {
+                document.getElementById('feedback-1').innerHTML = "<span class='success'>¡BUEN TRABAJO! ¡GANASTE EL JUEGO! 🏆🐆</span>";
+                document.getElementById('btn-reset-1').style.display = "inline-block";
+            } else {
+                document.getElementById('feedback-1').innerHTML = "<span class='success'>¡BIEN HECHO! 🏆</span>";
+                document.getElementById('btn-next-1').style.display = "inline-block";
+            }
         } else { 
-            document.getElementById('feedback-1').innerHTML = "<span class='error'>❌ Intenta de nuevo</span>"; 
+            game1Lives--;
+            updateGame1Scoreboard();
             playGlobalError();
+
+            if (game1Lives <= 0) {
+                document.getElementById('feedback-1').innerHTML = "<span class='error'>❌ ¡Vuelve a intentarlo! Te quedaste sin vidas. 😢</span>";
+                document.getElementById('btn-reset-1').style.display = "inline-block";
+            } else {
+                document.getElementById('feedback-1').innerHTML = "<span class='error'>❌ Intenta de nuevo</span>";
+                setTimeout(() => {
+                    setGame1ButtonsDisabled(false);
+                    document.getElementById('feedback-1').innerHTML = "";
+                }, 1200);
+            }
         }
+    }
+
+    /* ================= LÓGICA MINIJUEGO 2 ================= */
+    function resetGame2() {
+        game2CorrectCount = 0;
+        game2Lives = 3;
+        document.getElementById('btn-reset-2').style.display = "none";
+        setGame2ButtonsDisabled(false);
+        updateGame2Scoreboard();
+        nextRoundGame2();
+    }
+
+    function updateGame2Scoreboard() {
+        document.getElementById('game2-score').innerText = "Aciertos: " + game2CorrectCount + "/6";
+        let hearts = "";
+        for(let i=0; i<3; i++) { hearts += (i < game2Lives) ? "❤️" : "🖤"; }
+        document.getElementById('game2-lives').innerText = "Vidas: " + hearts;
+    }
+
+    function setGame2ButtonsDisabled(disabledStatus) {
+        document.getElementById('btn-opt-air').disabled = disabledStatus;
+        document.getElementById('btn-opt-road').disabled = disabledStatus;
+        document.getElementById('btn-opt-river').disabled = disabledStatus;
     }
 
     function nextRoundGame2() {
         if(currentAudio) currentAudio.pause();
         document.getElementById('feedback-2').innerHTML = "";
         document.getElementById('btn-next-2').style.display = "none";
+        
+        if (game2CorrectCount >= 6 || game2Lives <= 0) return;
+
+        setGame2ButtonsDisabled(false);
         currentTransport = transportes[Math.floor(Math.random() * transportes.length)];
         document.getElementById('transport-emoji').innerText = currentTransport.emoji;
     }
@@ -623,16 +782,156 @@
     }
 
     function checkAnswer2(selectedOption) {
+        setGame2ButtonsDisabled(true);
+
         if (selectedOption === currentTransport.correctWay) {
-            document.getElementById('feedback-2').innerHTML = "<span class='success'>¡EXCELENTE! 🏆</span>";
-            document.getElementById('btn-next-2').style.display = "inline-block";
+            game2CorrectCount++;
+            updateGame2Scoreboard();
             playGlobalSuccess();
+
+            if (game2CorrectCount >= 6) {
+                document.getElementById('feedback-2').innerHTML = "<span class='success'>¡BUEN TRABAJO! ¡SÚPER RUTAS COMPLETADO! 🏆✈️🔓</span>";
+                document.getElementById('btn-reset-2').style.display = "inline-block";
+            } else {
+                document.getElementById('feedback-2').innerHTML = "<span class='success'>¡EXCELENTE! 🏆</span>";
+                document.getElementById('btn-next-2').style.display = "inline-block";
+            }
         } else { 
-            document.getElementById('feedback-2').innerHTML = "<span class='error'>❌ ¡Intenta de nuevo!</span>"; 
+            game2Lives--;
+            updateGame2Scoreboard();
             playGlobalError();
+
+            if (game2Lives <= 0) {
+                document.getElementById('feedback-2').innerHTML = "<span class='error'>❌ ¡Vuelve a intentarlo! Te quedaste sin vidas. 😢</span>";
+                document.getElementById('btn-reset-2').style.display = "inline-block";
+            } else {
+                document.getElementById('feedback-2').innerHTML = "<span class='error'>❌ ¡Intenta de nuevo!</span>";
+                setTimeout(() => {
+                    setGame2ButtonsDisabled(false);
+                    document.getElementById('feedback-2').innerHTML = "";
+                }, 1200);
+            }
         }
     }
 
+    /* ================= LÓGICA MINIJUEGO 3 (TACHOS) ================= */
+    function resetGame3() {
+        game3CorrectCount = 0;
+        game3Lives = 3;
+        document.getElementById('btn-reset-3').style.display = "none";
+        document.getElementById('btn-next-3').style.display = "none";
+        document.getElementById('feedback-3').innerHTML = "";
+        game3Pool = [...todosLosResiduos].sort(() => Math.random() - 0.5);
+        updateGame3Scoreboard();
+        nextRoundGame3();
+    }
+
+    function updateGame3Scoreboard() {
+        document.getElementById('game3-score').innerText = "Aciertos: " + game3CorrectCount + "/18";
+        let hearts = "";
+        for(let i=0; i<3; i++) { hearts += (i < game3Lives) ? "❤️" : "🖤"; }
+        document.getElementById('game3-lives').innerText = "Vidas: " + hearts;
+    }
+
+    function nextRoundGame3() {
+        if(currentAudio) currentAudio.pause();
+        document.getElementById('feedback-3').innerHTML = "";
+        document.getElementById('btn-next-3').style.display = "none";
+        if (game3Lives <= 0 || game3CorrectCount >= 18) return;
+
+        let objetosRonda = game3Pool.slice(game3CorrectCount, game3CorrectCount + 6);
+        buildDragAndDropLevel('garbage-spawn-zone', objetosRonda);
+    }
+
+    /* ================= LÓGICA MINIJUEGO 4 (PROFESIONES) ================= */
+    function resetGame4() {
+        game4RoundIndex = 0;
+        game4Lives = 3;
+        document.getElementById('btn-reset-4').style.display = "none";
+        document.getElementById('btn-next-4').style.display = "none";
+        document.getElementById('feedback-4').innerHTML = "";
+        updateGame4Scoreboard();
+        nextRoundGame4();
+    }
+
+    function updateGame4Scoreboard() {
+        document.getElementById('game4-score').innerText = "Ronda: " + (game4RoundIndex + 1) + "/3";
+        let hearts = "";
+        for(let i=0; i<3; i++) { hearts += (i < game4Lives) ? "❤️" : "🖤"; }
+        document.getElementById('game4-lives').innerText = "Vidas: " + hearts;
+    }
+
+    function nextRoundGame4() {
+        if(currentAudio) currentAudio.pause();
+        document.getElementById('feedback-4').innerHTML = "";
+        document.getElementById('btn-next-4').style.display = "none";
+
+        if (game4Lives <= 0 || game4RoundIndex >= 3) return;
+
+        updateGame4Scoreboard();
+        
+        currentRoundProfessionals = poolRondasOficios[game4RoundIndex];
+        
+        const targetContainer = document.getElementById('profesionales-targets-container');
+        targetContainer.innerHTML = "";
+        
+        currentRoundProfessionals.forEach(prof => {
+            const box = document.createElement('div');
+            box.className = `dropzone-box width-4 ${prof.color}`;
+            box.setAttribute('data-targetid', prof.id);
+            box.ondragover = (ev) => allowDrop(ev);
+            box.ondragleave = (ev) => clearHover(ev);
+            box.ondrop = (ev) => dropItem(ev, 'game4');
+            box.innerHTML = `${prof.label} <span class="display-profesional">${prof.emoji}</span>`;
+            targetContainer.appendChild(box);
+        });
+
+        let herramientasRonda = [];
+        currentRoundProfessionals.forEach(prof => {
+            prof.tools.forEach(tool => {
+                herramientasRonda.push({
+                    id: tool.id,
+                    emoji: tool.emoji,
+                    target: prof.id,
+                    audio: tool.audio
+                });
+            });
+        });
+        
+        buildDragAndDropLevel('tools-spawn-zone', herramientasRonda);
+    }
+
+    /* ================= LÓGICA MINIJUEGO 5 (TAMAÑOS) ================= */
+    function resetGame5() {
+        game5CorrectCount = 0;
+        game5Lives = 3;
+        indiceRondaTamaño = 0;
+        document.getElementById('btn-reset-5').style.display = "none";
+        document.getElementById('btn-next-5').style.display = "none";
+        document.getElementById('feedback-5').innerHTML = "";
+        updateGame5Scoreboard();
+        nextRoundGame5();
+    }
+
+    function updateGame5Scoreboard() {
+        document.getElementById('game5-score').innerText = "Aciertos: " + game5CorrectCount + "/18";
+        let hearts = "";
+        for(let i=0; i<3; i++) { hearts += (i < game5Lives) ? "❤️" : "🖤"; }
+        document.getElementById('game5-lives').innerText = "Vidas: " + hearts;
+    }
+
+    function nextRoundGame5() {
+        if(currentAudio) currentAudio.pause();
+        document.getElementById('feedback-5').innerHTML = "";
+        document.getElementById('btn-next-5').style.display = "none";
+        
+        if (game5Lives <= 0 || game5CorrectCount >= 18) return;
+
+        let rondaActual = rondasTamaños[indiceRondaTamaño];
+        buildDragAndDropLevel('sizes-spawn-zone', rondaActual);
+    }
+
+    /* ================= DRAG & DROP Y DETECCIONES GLOBAL ================= */
     function buildDragAndDropLevel(spawnZoneId, itemsBase) {
         const spawnZone = document.getElementById(spawnZoneId);
         spawnZone.innerHTML = "";
@@ -647,7 +946,7 @@
             el.setAttribute('draggable', 'true');
             el.setAttribute('data-target-correcto', item.target || item.tacho);
             if (item.sizeStyle) el.style.fontSize = item.sizeStyle;
-            else el.style.fontSize = '35px'; // Escala base óptima para pantallas pequeñas
+            else el.style.fontSize = '35px';
             
             el.ondragstart = (ev) => ev.dataTransfer.setData("text/plain", ev.target.id);
             el.onclick = () => {
@@ -660,10 +959,6 @@
             spawnZone.appendChild(el);
         });
     }
-
-    function nextRoundGame3() { document.getElementById('feedback-3').innerHTML = ""; document.getElementById('btn-next-3').style.display = "none"; buildDragAndDropLevel('garbage-spawn-zone', residuosBase); }
-    function nextRoundGame4() { document.getElementById('feedback-4').innerHTML = ""; document.getElementById('btn-next-4').style.display = "none"; buildDragAndDropLevel('tools-spawn-zone', herramientasBase); }
-   function nextRoundGame5() { document.getElementById('feedback-5').innerHTML = ""; document.getElementById('btn-next-5').style.display = "none"; let rondaActual = rondasTamaños[indiceRondaTamaño]; buildDragAndDropLevel('sizes-spawn-zone', rondaActual); indiceRondaTamaño = (indiceRondaTamaño + 1) % rondasTamaños.length; }
 
     function allowDrop(ev) { ev.preventDefault(); ev.currentTarget.classList.add('drag-hover'); }
     function clearHover(ev) { ev.currentTarget.classList.remove('drag-hover'); }
@@ -685,24 +980,120 @@
             elemento.remove(); activeItemsCount--;
             playGlobalSuccess();
 
-            if (activeItemsCount === 0) {
-                if(gameCode === 'game3') feedback.innerHTML = "<span class='success'>¡SÚPER! Limpiaste todo el lugar junto a Sacha. 🌿🏆</span>";
-                else if(gameCode === 'game4') feedback.innerHTML = "<span class='success'>¡TRABAJO TERMINADO! Sacha y sus amigos están felices. 👨‍🏫💼🏆</span>";
-                else feedback.innerHTML = "<span class='success'>¡FANTÁSTICO! Todo quedó perfectamente ordenado. 📏🏆</span>";
-                document.getElementById('btn-next-' + feedbackNum).style.display = "inline-block";
+            if (gameCode === 'game3') {
+                game3CorrectCount++;
+                updateGame3Scoreboard();
+                if (activeItemsCount === 0) {
+                    if (game3CorrectCount >= 18) {
+                        feedback.innerHTML = "<span class='success'>¡SÚPER TRABAJO! Limpiaste todo el planeta con Sacha. 🌿🏆🐆</span>";
+                        document.getElementById('btn-reset-3').style.display = "inline-block";
+                    } else {
+                        feedback.innerHTML = "<span class='success'>¡Ronda completada! Sigue así. 👏</span>";
+                        document.getElementById('btn-next-3').style.display = "inline-block";
+                    }
+                }
+            } else if (gameCode === 'game4') {
+                if (activeItemsCount === 0) {
+                    game4RoundIndex++;
+                    if (game4RoundIndex >= 3) {
+                        feedback.innerHTML = "<span class='success'>¡FANTÁSTICO! Repartiste todas las herramientas con Sacha. 👨‍🏫🛠️💼🏆</span>";
+                        document.getElementById('btn-reset-4').style.display = "inline-block";
+                    } else {
+                        feedback.innerHTML = "<span class='success'>¡Ronda superada con éxito! 🎉</span>";
+                        document.getElementById('btn-next-4').style.display = "inline-block";
+                    }
+                }
+            } else if (gameCode === 'game5') {
+                game5CorrectCount++;
+                updateGame5Scoreboard();
+                if (activeItemsCount === 0) {
+                    indiceRondaTamaño++;
+                    if (game5CorrectCount >= 18) {
+                        feedback.innerHTML = "<span class='success'>¡FANTÁSTICO! Ordenaste todos los tamaños con Sacha. 📏🏆🐆</span>";
+                        document.getElementById('btn-reset-5').style.display = "inline-block";
+                    } else {
+                        feedback.innerHTML = "<span class='success'>¡Ronda superada! ¡Todo ordenado! 🎉</span>";
+                        document.getElementById('btn-next-5').style.display = "inline-block";
+                    }
+                }
             }
         } else { 
-            feedback.innerHTML = "<span class='error'>❌ ¡Ahí no corresponde!</span>"; 
             playGlobalError();
+            if (gameCode === 'game4') {
+                game4Lives--;
+                updateGame4Scoreboard();
+                if (game4Lives <= 0) {
+                    feedback.innerHTML = "<span class='error'>❌ ¡Vuelve a intentarlo! Te quedaste sin vidas. 😢</span>";
+                    document.getElementById('tools-spawn-zone').innerHTML = "";
+                    document.getElementById('btn-reset-4').style.display = "inline-block";
+                } else {
+                    feedback.innerHTML = "<span class='error'>❌ ¡Esa herramienta no va ahí!</span>";
+                }
+            } else if (gameCode === 'game3') {
+                game3Lives--;
+                updateGame3Scoreboard();
+                if (game3Lives <= 0) {
+                    feedback.innerHTML = "<span class='error'>❌ ¡Vuelve a intentarlo! Te quedaste sin vidas. 😢</span>";
+                    document.getElementById('garbage-spawn-zone').innerHTML = "";
+                    document.getElementById('btn-reset-3').style.display = "inline-block";
+                } else {
+                    feedback.innerHTML = "<span class='error'>❌ ¡Ahí no corresponde!</span>";
+                }
+            } else if (gameCode === 'game5') {
+                game5Lives--;
+                updateGame5Scoreboard();
+                if (game5Lives <= 0) {
+                    feedback.innerHTML = "<span class='error'>❌ ¡Vuelve a intentarlo! Te quedaste sin vidas. 😢</span>";
+                    document.getElementById('sizes-spawn-zone').innerHTML = "";
+                    document.getElementById('btn-reset-5').style.display = "inline-block";
+                } else {
+                    feedback.innerHTML = "<span class='error'>❌ ¡Ese tamaño no corresponde al casillero!</span>"; 
+                }
+            }
         }
+    }
+
+    /* ================= MODIFICACIÓN: LÓGICA MINIJUEGO 6 (NORMAS DEL AULA INTEGRAL) ================= */
+    function resetGame6() {
+        game6CorrectCount = 0;
+        game6Lives = 3;
+        document.getElementById('btn-reset-6').style.display = "none";
+        document.getElementById('btn-next-6').style.display = "none";
+        document.getElementById('feedback-6').innerHTML = "";
+        setGame6ButtonsDisabled(false);
+        
+        // Mezclamos el pool completo de 10 situaciones para que cada partida sea aleatoria y diferente
+        situacionesFiltradas = [...situacionesAula].sort(() => Math.random() - 0.5);
+        
+        updateGame6Scoreboard();
+        nextRoundGame6();
+    }
+
+    function updateGame6Scoreboard() {
+        document.getElementById('game6-score').innerText = "Aciertos: " + game6CorrectCount + "/6";
+        let hearts = "";
+        for(let i=0; i<3; i++) { hearts += (i < game6Lives) ? "❤️" : "🖤"; }
+        document.getElementById('game6-lives').innerText = "Vidas: " + hearts;
+    }
+
+    function setGame6ButtonsDisabled(disabledStatus) {
+        document.getElementById('btn-behavior-good').disabled = disabledStatus;
+        document.getElementById('btn-behavior-bad').disabled = disabledStatus;
     }
 
     function nextRoundGame6() {
         if(currentAudio) currentAudio.pause();
         document.getElementById('feedback-6').innerHTML = "";
         document.getElementById('btn-next-6').style.display = "none";
-        currentClassroomCase = situacionesAula[Math.floor(Math.random() * situacionesAula.length)];
- inversion:     document.getElementById('classroom-emoji').innerText = currentClassroomCase.emoji;
+        
+        if (game6CorrectCount >= 6 || game6Lives <= 0) return;
+
+        setGame6ButtonsDisabled(false);
+        
+        // Obtenemos la situación correspondiente usando el conteo de aciertos actuales como índice
+        currentClassroomCase = situacionesFiltradas[game6CorrectCount];
+        
+        document.getElementById('classroom-emoji').innerText = currentClassroomCase.emoji;
         document.getElementById('classroom-text').innerText = currentClassroomCase.text;
     }
 
@@ -712,15 +1103,36 @@
     }
 
     function checkBehaviorAnswer(userSelectedTrue) {
+        setGame6ButtonsDisabled(true);
         const feedback = document.getElementById('feedback-6');
         
         if (userSelectedTrue === currentClassroomCase.isGood) {
-            feedback.innerHTML = "<span class='success'>¡EXCELENTE DECISIÓN! Sacha está orgulloso. 🏆</span>";
-            document.getElementById('btn-next-6').style.display = "inline-block";
+            game6CorrectCount++;
+            updateGame6Scoreboard();
             playGlobalSuccess();
+
+            if (game6CorrectCount >= 6) {
+                feedback.innerHTML = "<span class='success'>¡SÚPER TRABAJO! Sacha está feliz, ¡eres un experto en convivencia! 🏫🏆🐆</span>";
+                document.getElementById('btn-reset-6').style.display = "inline-block";
+            } else {
+                feedback.innerHTML = "<span class='success'>¡EXCELENTE DECISIÓN! Sacha está orgulloso. 🏆</span>";
+                document.getElementById('btn-next-6').style.display = "inline-block";
+            }
         } else {
-            feedback.innerHTML = "<span class='error'>❌ ¡Esa conducta causa problemas, piénsalo otra vez!</span>";
+            game6Lives--;
+            updateGame6Scoreboard();
             playGlobalError();
+
+            if (game6Lives <= 0) {
+                feedback.innerHTML = "<span class='error'>❌ ¡Vuelve a intentarlo! Te quedaste sin vidas en el aula. 😢🏫</span>";
+                document.getElementById('btn-reset-6').style.display = "inline-block";
+            } else {
+                feedback.innerHTML = "<span class='error'>❌ ¡Esa conducta causa problemas, piénsalo otra vez!</span>";
+                setTimeout(() => {
+                    setGame6ButtonsDisabled(false);
+                    feedback.innerHTML = "";
+                }, 1500);
+            }
         }
     }
 </script>
