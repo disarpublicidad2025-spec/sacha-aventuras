@@ -94,6 +94,45 @@
             cursor: not-allowed;
         }
 
+        /* --- ESTILOS DEL CARTEL DE INSTRUCCIONES DE SACHA --- */
+        .sacha-audio-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: #f3e5f5;
+            border: 4px solid #9c27b0;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px auto 20px;
+            width: 95%;
+            box-shadow: 4px 4px 0px #4a0072;
+        }
+
+        .audio-banner-text {
+            font-size: 1.8vw;
+            color: #4a0072;
+            font-weight: bold;
+            line-height: 1.4;
+            animation: pulseText 1.5s infinite;
+        }
+
+        .btn-sacha-instruction {
+            background-color: #9c27b0;
+            box-shadow: 4px 4px 0px #4a0072;
+            padding: 10px 16px;
+            font-size: 4.5vw;
+            margin: 0;
+            cursor: pointer;
+            border: 3px solid #000;
+        }
+
+        @keyframes pulseText {
+            0% { opacity: 0.6; transform: scale(0.98); }
+            50% { opacity: 1; transform: scale(1.02); }
+            100% { opacity: 0.6; transform: scale(0.98); }
+        }
+
         .sacha-avatar {
             width: 100px;
             height: 100px;
@@ -324,6 +363,9 @@
             h1 { font-size: 18px; }
             h2 { font-size: 11px; }
             .question-box { font-size: 12px; width: auto; }
+            .sacha-audio-container { padding: 10px; margin-bottom: 20px; width: 100%; }
+            .audio-banner-text { font-size: 9px; }
+            .btn-sacha-instruction { font-size: 16px; padding: 8px 14px; }
             button { font-size: 10px; padding: 15px; margin: 10px; }
             .animal-card { width: 45%; padding: 15px; }
             .display-emoji { font-size: 60px; }
@@ -379,6 +421,12 @@
             <span id="game1-score">Aciertos: 0/6</span>
             <span id="game1-lives">Vidas: ❤️❤️❤️</span>
         </div>
+        
+        <div class="sacha-audio-container">
+            <span class="audio-banner-text">¡PULSA AQUÍ PARA ESCUCHAR LA INSTRUCCIÓN!</span>
+            <button class="btn-sacha-instruction" onclick="playSachaInstruction(1)">📢</button>
+        </div>
+
         <div id="question-text-1" class="question-box">¿Qué animal es el...?</div>
         <div class="game-flex">
             <div class="animal-card">
@@ -407,6 +455,12 @@
             <span id="game2-score">Aciertos: 0/6</span>
             <span id="game2-lives">Vidas: ❤️❤️❤️</span>
         </div>
+
+        <div class="sacha-audio-container">
+            <span class="audio-banner-text">¡PULSA AQUÍ PARA ESCUCHAR LA INSTRUCCIÓN!</span>
+            <button class="btn-sacha-instruction" onclick="playSachaInstruction(2)">📢</button>
+        </div>
+
         <div class="question-box" style="color: #1d71b8; background-color: #e3f2fd;">¿Por dónde debe ir este transporte?</div>
         <div class="card-center">
             <div id="transport-emoji" class="display-emoji">🚢</div>
@@ -432,6 +486,12 @@
             <span id="game3-score">Aciertos: 0/18</span>
             <span id="game3-lives">Vidas: ❤️❤️❤️</span>
         </div>
+
+        <div class="sacha-audio-container">
+            <span class="audio-banner-text">¡PULSA AQUÍ PARA ESCUCHAR LA INSTRUCCIÓN!</span>
+            <button class="btn-sacha-instruction" onclick="playSachaInstruction(3)">📢</button>
+        </div>
+
         <div class="question-box" style="color: #2e7d32; background-color: #e8f5e9; margin-bottom: 10px;">¡Arrastra los desperdicios al tacho correcto!</div>
         <p style="font-size: 7px; margin-bottom: 15px; color: #555;">(Haz clic para escuchar el sonido del material)</p>
 
@@ -463,6 +523,12 @@
             <span id="game4-score">Ronda: 1/3</span>
             <span id="game4-lives">Vidas: ❤️❤️❤️</span>
         </div>
+
+        <div class="sacha-audio-container">
+            <span class="audio-banner-text">¡PULSA AQUÍ PARA ESCUCHAR LA INSTRUCCIÓN!</span>
+            <button class="btn-sacha-instruction" onclick="playSachaInstruction(4)">📢</button>
+        </div>
+
         <div class="question-box" style="color: #b0003a; background-color: #fce4ec; margin-bottom: 10px;">¡Reparte las herramientas al profesional correcto!</div>
         <p style="font-size: 7px; margin-bottom: 15px; color: #555;">(Haz clic en cada herramienta para escucharla)</p>
 
@@ -485,6 +551,12 @@
             <span id="game5-score">Aciertos: 0/18</span>
             <span id="game5-lives">Vidas: ❤️❤️❤️</span>
         </div>
+
+        <div class="sacha-audio-container">
+            <span class="audio-banner-text">¡PULSA AQUÍ PARA ESCUCHAR LA INSTRUCCIÓN!</span>
+            <button class="btn-sacha-instruction" onclick="playSachaInstruction(5)">📢</button>
+        </div>
+
         <div class="question-box" style="color: #e64a19; background-color: #fff3e0; margin-bottom: 10px;">¡Ordena por tamaño de pequeño a grande!</div>
         <p style="font-size: 7px; margin-bottom: 15px; color: #555;">(Haz clic para escuchar el sonido real)</p>
 
@@ -516,6 +588,12 @@
             <span id="game6-score">Aciertos: 0/6</span>
             <span id="game6-lives">Vidas: ❤️❤️❤️</span>
         </div>
+
+        <div class="sacha-audio-container">
+            <span class="audio-banner-text">¡PULSA AQUÍ PARA ESCUCHAR LA INSTRUCCIÓN!</span>
+            <button class="btn-sacha-instruction" onclick="playSachaInstruction(6)">📢</button>
+        </div>
+
         <div class="question-box" style="color: #7b1fa2; background-color: #f3e5f5; margin-bottom: 15px;">¿Qué debe hacer Sacha en esta situación?</div>
 
         <div class="classroom-text-card">
@@ -537,9 +615,8 @@
     <div id="screen-delivery-game" class="screen">
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid #000; padding-bottom: 10px;">
             <span style="font-size: 8px; color: #673ab7;">Sacha Delivery 🚚</span>
-            <!-- BOTÓN MUTE INTEGRADO -->
             <div>
-                <button id="btn-delivery-mute" onclick="toggleDeliveryMute()" style="margin:0; padding:5px; font-size:8px; background-color:#5cb85c; box-shadow:2px 2px 0px #3e8e41;">🔊 Mute</button>
+                <button id="btn-delivery-mute" onclick="toggleDeliveryMute()" style="margin:0; padding:5px; font-size:8px; background-color:#5cb85c; box-shadow:2px 2px 0px #5cb85c;">🔊 Mute</button>
                 <button onclick="changeScreen('screen-menu')" style="margin:0; padding: 5px; font-size: 8px; background-color: #d9534f; box-shadow: 2px 2px 0px #b52b27;">Salir</button>
             </div>
         </div>
@@ -603,7 +680,7 @@
     let situacionesFiltradas = [];
     let currentClassroomCase = {};
 
-    // VARIABLES DEL MINIJUEGO 7 (CON POWER-UPS Y MÚSICA)
+    // VARIABLES DEL MINIJUEGO 7
     let canvas = null;
     let ctx = null;
     let deliveryGameState = 'menu';
@@ -621,8 +698,6 @@
     let touchStartY = 0;
     const minSwipeDistance = 30;
     const deliveryLanes = [85, 150, 215, 280, 345];
-    
-    // Configuración Audio Retro J7
     let deliveryBgm = null;
     let deliveryMuted = false;
 
@@ -633,8 +708,8 @@
         height: 75,
         isHoldingBox: false,
         hitTimer: 0,
-        shieldTimer: 0, // Segundos del Escudo Protector
-        turboTimer: 0   // Segundos del Súper Turbo
+        shieldTimer: 0,
+        turboTimer: 0
     };
 
     const deliveryLevelData = {
@@ -733,6 +808,14 @@
         { emoji: '🪑', text: 'Para cuidar mi salón de clases y mi seguridad, ¿debo sentarme bien en la silla sin mecerme ni dañarla?', isGood: true, audio: 'sonidos/campana.mp3' },
         { emoji: '🤬', text: 'Estoy enojado porque perdí en un juego de mesa del aula. ¿Está bien insultar o gritarles a mis compañeros?', isGood: false, audio: 'sonidos/campana.mp3' }
     ];
+
+    function playSachaInstruction(gameNum) {
+        if(currentAudio) currentAudio.pause();
+        currentAudio = new Audio(`sonidos/sacha_juego${gameNum}.mp3`);
+        currentAudio.play().catch(e => {
+            console.log(`Falta subir el archivo de audio: sonidos/sacha_juego${gameNum}.mp3`);
+        });
+    }
 
     function playGlobalSuccess() {
         if (deliveryMuted && deliveryGameState === 'playing') return;
@@ -1142,7 +1225,6 @@
         buildDynamicDeliveryUIIcon();
         resetDeliveryGame();
 
-        // Iniciar Música de Fondo 8-bits
         if (!deliveryBgm) {
             deliveryBgm = new Audio('sonidos/musica_fondo.mp3');
             deliveryBgm.loop = true;
@@ -1162,6 +1244,7 @@
         iconContainer.appendChild(miniIcon);
     }
 
+    // CONTROLES MOVER DELIVERY
     function moveDeliveryPlayerLeft() {
         if (deliveryGameState !== 'playing') return;
         let currentIndex = deliveryLanes.indexOf(deliveryPlayer.x);
@@ -1214,12 +1297,12 @@
         document.getElementById('delivery-lives-display').textContent = hearts;
     }
 
+    // MANEJO DE UPDATE, SPPAWN, COLISIÓN, DIBUJO Y BÚSQUEDA IGUALES...
     function deliveryUpdate() {
         if (deliveryGameState !== 'playing') return;
 
         deliveryGameTick++;
         
-        // Manejo de Timers de Power-ups y Efectos
         if (deliveryPlayer.hitTimer > 0) deliveryPlayer.hitTimer--;
         
         let statusText = '';
@@ -1230,7 +1313,6 @@
         if (deliveryPlayer.turboTimer > 0) {
             deliveryPlayer.turboTimer--;
             statusText += `⚡ Turbo (${Math.ceil(deliveryPlayer.turboTimer/60)}s) `;
-            // Movimiento automático de entrega si tiene turbo activo
             if (deliveryPlayer.isHoldingBox) deliveryPlayer.y -= 8;
         } else {
             if (deliveryPlayer.isHoldingBox) deliveryPlayer.y -= 4;
@@ -1250,7 +1332,6 @@
                 
                 if (obj.type === 'obstaculo') {
                     if (deliveryPlayer.shieldTimer > 0 || deliveryPlayer.turboTimer > 0) {
-                        // Invulnerable por Escudo o Turbo
                         playPlinkSound();
                     } else {
                         deliveryLives--;
@@ -1266,8 +1347,8 @@
                     deliveryObjects.splice(i, 1);
                 } else if (obj.type === 'powerup') {
                     playPlinkSound();
-                    if (obj.subType === 'escudo') deliveryPlayer.shieldTimer = 300; // 5 segundos
-                    if (obj.subType === 'turbo') deliveryPlayer.turboTimer = 180;  // 3 segundos
+                    if (obj.subType === 'escudo') deliveryPlayer.shieldTimer = 300; 
+                    if (obj.subType === 'turbo') deliveryPlayer.turboTimer = 180;  
                     if (obj.subType === 'vida' && deliveryLives < 3) {
                         deliveryLives++;
                         updateDeliveryLivesUI();
@@ -1280,7 +1361,6 @@
             if (deliveryObjects[i].y > canvas.height) deliveryObjects.splice(i, 1);
         }
         
-        // Retorno de entrega exitosa
         if (deliveryPlayer.isHoldingBox && deliveryPlayer.y <= 70) {
             deliveryBoxesDelivered++;
             document.getElementById('delivery-boxes-display').textContent = deliveryBoxesDelivered;
@@ -1316,7 +1396,6 @@
         } else if (rand < 0.85) {
             deliveryObjects.push({ type: 'caja', x: randomLane, y: -40, width: 40, height: 40 });
         } else {
-            // Generación de Power-Ups
             const pUpTypes = ['escudo', 'turbo', 'vida'];
             const chosenPUp = pUpTypes[Math.floor(Math.random() * pUpTypes.length)];
             deliveryObjects.push({ type: 'powerup', subType: chosenPUp, x: randomLane, y: -40, width: 40, height: 40 });
@@ -1382,7 +1461,6 @@
             } else if (obj.type === 'caja') {
                 drawDeliveryLevelItem(obj.x, obj.y, false);
             } else if (obj.type === 'powerup') {
-                // RENDERIZADO DE POWERUPS EN PANTALLA
                 ctx.save();
                 ctx.font = '24px sans-serif';
                 let pEmoji = '🛡️';
@@ -1429,19 +1507,11 @@
 
     function drawDeliveryPlayer(x, y) {
         ctx.save();
-        
-        // Aura del Escudo DISAR (Brillante)
         if (deliveryPlayer.shieldTimer > 0) {
-            ctx.shadowBlur = 15;
-            ctx.shadowColor = '#00ccff';
-            ctx.strokeStyle = '#00ccff';
-            ctx.lineWidth = 4;
-            ctx.beginPath();
-            ctx.arc(x + 25, y + 35, 45, 0, Math.PI*2);
-            ctx.stroke();
+            ctx.shadowBlur = 15; ctx.shadowColor = '#00ccff'; ctx.strokeStyle = '#00ccff'; ctx.lineWidth = 4;
+            ctx.beginPath(); ctx.arc(x + 25, y + 35, 45, 0, Math.PI*2); ctx.stroke();
         }
 
-        // Estilo parpadeo por golpe
         if (deliveryPlayer.hitTimer > 0 && Math.floor(deliveryPlayer.hitTimer / 4) % 2 === 0) ctx.globalAlpha = 0.2;
 
         ctx.fillStyle = '#ffb31a'; ctx.beginPath(); ctx.arc(x + 5, y + 60, 6, 0, Math.PI * 2); ctx.fill();
@@ -1598,33 +1668,24 @@
         }
     }
 
-    // CONTROLES DE DIRECCIÓN JUEGO 7
     window.addEventListener('keydown', function(e) {
         if (deliveryGameState !== 'playing') return;
-        if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
-            moveDeliveryPlayerLeft();
-        } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
-            moveDeliveryPlayerRight();
-        }
+        if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') moveDeliveryPlayerLeft();
+        else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') moveDeliveryPlayerRight();
     });
 
     const container = document.getElementById('delivery-canvas-container');
     container.addEventListener('touchstart', function(e) {
         if (deliveryGameState !== 'playing') return;
-        touchStartX = e.touches[0].clientX;
-        touchStartY = e.touches[0].clientY;
+        touchStartX = e.touches[0].clientX; touchStartY = e.touches[0].clientY;
     }, {passive: true});
 
     container.addEventListener('touchend', function(e) {
         if (deliveryGameState !== 'playing') return;
-        let touchEndX = e.changedTouches[0].clientX;
-        let touchEndY = e.changedTouches[0].clientY;
-        let diffX = touchEndX - touchStartX;
-        let diffY = touchEndY - touchStartY;
-
+        let touchEndX = e.changedTouches[0].clientX; let touchEndY = e.changedTouches[0].clientY;
+        let diffX = touchEndX - touchStartX; let diffY = touchEndY - touchStartY;
         if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > minSwipeDistance) {
-            if (diffX > 0) moveDeliveryPlayerRight();
-            else moveDeliveryPlayerLeft();
+            if (diffX > 0) moveDeliveryPlayerRight(); else moveDeliveryPlayerLeft();
         }
     }, {passive: true});
 
