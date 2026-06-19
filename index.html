@@ -186,7 +186,6 @@
             box-shadow: 4px 4px 0px #11446e;
         }
 
-        /* --- ESTILOS DRAG & DROP RESPONSIVE --- */
         .spawn-zone {
             display: flex;
             justify-content: center;
@@ -291,6 +290,29 @@
             font-weight: bold;
         }
 
+        #delivery-canvas-container {
+            width: 100%;
+            max-width: 480px;
+            margin: 10px auto;
+            border: 4px solid #000;
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: #222;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+        .delivery-grid-ui {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
         .disar-footer {
             margin-top: 25px;
             font-size: 8px;
@@ -341,6 +363,7 @@
             <button onclick="changeScreen('screen-game4')" style="width: 85%; background-color: #e91e63; box-shadow: 4px 4px 0px #b0003a;">4. Oficios y Profesiones</button>
             <button onclick="changeScreen('screen-game5')" style="width: 85%; background-color: #ff5722; box-shadow: 4px 4px 0px #e64a19;">5. Tamaños Grandes y Pequeños</button>
             <button onclick="changeScreen('screen-game6')" style="width: 85%; background-color: #9c27b0; box-shadow: 4px 4px 0px #7b1fa2;">6. Normas del Aula 🏫</button>
+            <button onclick="selectDeliveryLevel(1)" style="width: 85%; background-color: #673ab7; box-shadow: 4px 4px 0px #512da8;">7. Sacha Rutas - Delivery 🚚</button>
         </div>
         <br>
         <button onclick="changeScreen('screen-home')" style="background-color: #d9534f; box-shadow: 4px 4px 0px #b52b27;">Atrás</button>
@@ -511,6 +534,40 @@
         <button id="btn-reset-6" onclick="resetGame6()" style="display: none; background-color: #d9534f; box-shadow: 4px 4px 0px #b52b27;">¡Jugar de nuevo!</button>
     </div>
 
+    <div id="screen-delivery-game" class="screen">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid #000; padding-bottom: 10px;">
+            <span style="font-size: 8px; color: #673ab7;">Sacha Delivery 🚚</span>
+            <!-- BOTÓN MUTE INTEGRADO -->
+            <div>
+                <button id="btn-delivery-mute" onclick="toggleDeliveryMute()" style="margin:0; padding:5px; font-size:8px; background-color:#5cb85c; box-shadow:2px 2px 0px #3e8e41;">🔊 Mute</button>
+                <button onclick="changeScreen('screen-menu')" style="margin:0; padding: 5px; font-size: 8px; background-color: #d9534f; box-shadow: 2px 2px 0px #b52b27;">Salir</button>
+            </div>
+        </div>
+        <br>
+        <div id="delivery-ui" class="delivery-grid-ui">
+            <div>Vidas: <span id="delivery-lives-display">❤️❤️•</span></div>
+            <div>Entregas: <span id="delivery-boxes-display">0</span></div>
+            <div style="grid-column: span 2; margin-top:5px; color:#512da8;">
+                Llevando: <span id="delivery-label-item">...</span> <span id="delivery-mini-icon" style="display:inline-block; vertical-align:middle;"></span>
+                <span id="delivery-powerup-status" style="margin-left:10px; color:#ff9900; font-size:7px;"></span>
+            </div>
+        </div>
+        
+        <div id="delivery-canvas-container">
+            <canvas id="deliveryCanvas" width="480" height="600"></canvas>
+        </div>
+
+        <div id="delivery-game-over" style="display:none; background:#ffcdd2; border:3px solid #d32f2f; padding:10px; margin-bottom:10px; border-radius:8px;">
+            <p id="delivery-final-text" style="font-size:10px; color:#c62828; font-weight:bold;"></p>
+            <button onclick="resetDeliveryGame()" style="background-color:#4caf50; font-size:8px; padding:8px;">Reintentar</button>
+        </div>
+
+        <div style="margin-top:10px;">
+            <button onclick="moveDeliveryPlayerLeft()" style="background-color:#9e9e9e; box-shadow: 4px 4px 0px #616161; font-size:12px;">◀</button>
+            <button onclick="moveDeliveryPlayerRight()" style="background-color:#9e9e9e; box-shadow: 4px 4px 0px #616161; font-size:12px;">▶</button>
+        </div>
+    </div>
+
     <div class="disar-footer">DISAR © 2026</div>
 </div>
 
@@ -522,9 +579,12 @@
     // Variables globales para puntuaciones
     let game1CorrectCount = 0;
     let game1Lives = 3;
+    let targetType1 = '';
+    let currentRoundData1 = {};
 
     let game2CorrectCount = 0;
     let game2Lives = 3;
+    let currentTransport = {};
 
     let game3CorrectCount = 0;
     let game3Lives = 3;
@@ -532,17 +592,58 @@
 
     let game4RoundIndex = 0; 
     let game4Lives = 3;
-    let game4ItemsRemaining = 0;
     let currentRoundProfessionals = [];
 
     let game5CorrectCount = 0;
     let game5Lives = 3;
     let indiceRondaTamaño = 0; 
 
-    // MODIFICACIÓN MINIJUEGO 6: Variables globales para el control del sistema de vidas/puntos
     let game6CorrectCount = 0;
     let game6Lives = 3;
     let situacionesFiltradas = [];
+    let currentClassroomCase = {};
+
+    // VARIABLES DEL MINIJUEGO 7 (CON POWER-UPS Y MÚSICA)
+    let canvas = null;
+    let ctx = null;
+    let deliveryGameState = 'menu';
+    let deliveryAnimationId = null;
+    let deliveryCurrentLevel = 1;
+    let deliveryLives = 3;
+    let deliveryBoxesDelivered = 0;
+    let deliveryObjects = [];
+    let deliveryGameTick = 0;
+    let deliveryBaseSpeed = 4;
+    let deliveryGameSpeed = 4;
+    let deliverySpawnRate = 50;
+    let deliveryRoadLineOffset = 0;
+    let touchStartX = 0;
+    let touchStartY = 0;
+    const minSwipeDistance = 30;
+    const deliveryLanes = [85, 150, 215, 280, 345];
+    
+    // Configuración Audio Retro J7
+    let deliveryBgm = null;
+    let deliveryMuted = false;
+
+    let deliveryPlayer = {
+        x: 215,
+        y: 510,
+        width: 50,
+        height: 75,
+        isHoldingBox: false,
+        hitTimer: 0,
+        shieldTimer: 0, // Segundos del Escudo Protector
+        turboTimer: 0   // Segundos del Súper Turbo
+    };
+
+    const deliveryLevelData = {
+        1: { name: 'Módulos/Cocinetas', iconColor: '#d99652' },
+        2: { name: 'Motobombas', iconColor: '#ff3300' },
+        3: { name: 'Pantallas Digitales', iconColor: '#00ccff' },
+        4: { name: 'Pizarras de Tiza', iconColor: '#555555' },
+        5: { name: 'Sillas Ejecutivas', iconColor: '#cccccc' }
+    };
 
     const salvajes = [
         { emoji: '🦁', type: 'salvaje', audio: 'sonidos/leon.mp3' },
@@ -620,13 +721,11 @@
         [{ id: 's16', emoji: '🚀', target: 'grande', sizeStyle: '42px', audio: 'sonidos/cohete.mp3' }, { id: 's17', emoji: '🎸', target: 'mediano', sizeStyle: '30px', audio: 'sonidos/guitarra.mp3' }, { id: 's18', emoji: '💍', target: 'pequeño', sizeStyle: '18px', audio: 'sonidos/anillo.mp3' }]
     ];
 
-    // MODIFICACIÓN MINIJUEGO 6: Pull ampliado a 10 situaciones (Las 4 base originales + 6 situaciones adicionales extra)
     const situacionesAula = [
         { emoji: '🙋‍♂️', text: 'El profesor hace una pregunta y yo sé la respuesta correcta. ¿Debo levantar la mano y esperar mi turno?', isGood: true, audio: 'sonidos/campana.mp3' },
         { emoji: '🏃‍♂️', text: 'Quiero salir rápido al recreo. ¿Está bien correr empujando a mis compañeros en el pasillo?', isGood: false, audio: 'sonidos/campana.mp3' },
         { emoji: '🤫', text: 'Un compañero está exponiendo su dibujo al frente de la clase. ¿Debo guardar silencio y escuchar con atención?', isGood: true, audio: 'sonidos/campana.mp3' },
         { emoji: '🎒', text: 'Terminó la clase de pintura. ¿Dejo las pinturas tiradas en el piso del aula?', isGood: false, audio: 'sonidos/campana.mp3' },
-        // Nuevas 6 situaciones añadidas:
         { emoji: '🍏', text: 'Tengo basura de mi colación o refrigerio. ¿Es correcto guardarla y botarla en el basurero del aula?', isGood: true, audio: 'sonidos/campana.mp3' },
         { emoji: '✏️', text: 'Sacha necesita un lápiz de color y no tiene. ¿Está bien tomar un color de la cartuchera de mi compañero sin pedir permiso?', isGood: false, audio: 'sonidos/campana.mp3' },
         { emoji: '🤝', text: 'Un compañero nuevo se integró a la clase hoy. ¿Debo invitarlo a jugar conmigo durante el recreo?', isGood: true, audio: 'sonidos/campana.mp3' },
@@ -636,16 +735,36 @@
     ];
 
     function playGlobalSuccess() {
-        let snd = new Audio('sonidos/victoria.mp3');
-        snd.play().catch(e => {});
+        if (deliveryMuted && deliveryGameState === 'playing') return;
+        try { let snd = new Audio('sonidos/victoria.mp3'); snd.play().catch(e => {}); } catch(e){}
     }
 
     function playGlobalError() {
-        let snd = new Audio('sonidos/error.mp3');
-        snd.play().catch(e => {});
+        if (deliveryMuted && deliveryGameState === 'playing') return;
+        try { let snd = new Audio('sonidos/error.mp3'); snd.play().catch(e => {}); } catch(e){}
+    }
+
+    function playPlinkSound() {
+        if (deliveryMuted) return;
+        try { let snd = new Audio('sonidos/powerup.mp3'); snd.play().catch(e => {}); } catch(e){}
+    }
+
+    function toggleDeliveryMute() {
+        deliveryMuted = !deliveryMuted;
+        const btn = document.getElementById('btn-delivery-mute');
+        if (deliveryMuted) {
+            btn.textContent = '🔇 Muted';
+            btn.style.backgroundColor = '#d9534f';
+            if (deliveryBgm) deliveryBgm.pause();
+        } else {
+            btn.textContent = '🔊 Mute';
+            btn.style.backgroundColor = '#5cb85c';
+            if (deliveryBgm && deliveryGameState === 'playing') deliveryBgm.play().catch(e => {});
+        }
     }
 
     function changeScreen(screenId) {
+        stopDeliveryGame(); 
         if(currentAudio) currentAudio.pause();
         document.querySelectorAll('.screen').forEach(screen => screen.classList.remove('active'));
         document.getElementById(screenId).classList.add('active');
@@ -655,7 +774,7 @@
         if(screenId === 'screen-game3') resetGame3();
         if(screenId === 'screen-game4') resetGame4(); 
         if(screenId === 'screen-game5') resetGame5(); 
-        if(screenId === 'screen-game6') resetGame6(); // Inicialización limpia completa del juego 6
+        if(screenId === 'screen-game6') resetGame6();
     }
 
     /* ================= LÓGICA MINIJUEGO 1 ================= */
@@ -931,7 +1050,433 @@
         buildDragAndDropLevel('sizes-spawn-zone', rondaActual);
     }
 
-    /* ================= DRAG & DROP Y DETECCIONES GLOBAL ================= */
+    /* ================= LÓGICA MINIJUEGO 6 (NORMAS DEL AULA) ================= */
+    function resetGame6() {
+        game6CorrectCount = 0;
+        game6Lives = 3;
+        document.getElementById('btn-reset-6').style.display = "none";
+        document.getElementById('btn-next-6').style.display = "none";
+        document.getElementById('feedback-6').innerHTML = "";
+        setGame6ButtonsDisabled(false);
+        
+        situacionesFiltradas = [...situacionesAula].sort(() => Math.random() - 0.5);
+        
+        updateGame6Scoreboard();
+        nextRoundGame6();
+    }
+
+    function updateGame6Scoreboard() {
+        document.getElementById('game6-score').innerText = "Aciertos: " + game6CorrectCount + "/6";
+        let hearts = "";
+        for(let i=0; i<3; i++) { hearts += (i < game6Lives) ? "❤️" : "🖤"; }
+        document.getElementById('game6-lives').innerText = "Vidas: " + hearts;
+    }
+
+    function setGame6ButtonsDisabled(disabledStatus) {
+        document.getElementById('btn-behavior-good').disabled = disabledStatus;
+        document.getElementById('btn-behavior-bad').disabled = disabledStatus;
+    }
+
+    function nextRoundGame6() {
+        if(currentAudio) currentAudio.pause();
+        document.getElementById('feedback-6').innerHTML = "";
+        document.getElementById('btn-next-6').style.display = "none";
+        
+        if (game6CorrectCount >= 6 || game6Lives <= 0) return;
+
+        setGame6ButtonsDisabled(false);
+        currentClassroomCase = situacionesFiltradas[game6CorrectCount];
+        
+        document.getElementById('classroom-emoji').innerText = currentClassroomCase.emoji;
+        document.getElementById('classroom-text').innerText = currentClassroomCase.text;
+    }
+
+    function playClassroomSound() {
+        if(currentAudio) currentAudio.pause();
+        currentAudio = new Audio(currentClassroomCase.audio); currentAudio.play().catch(e => {});
+    }
+
+    function checkBehaviorAnswer(userSelectedTrue) {
+        setGame6ButtonsDisabled(true);
+        const feedback = document.getElementById('feedback-6');
+        
+        if (userSelectedTrue === currentClassroomCase.isGood) {
+            game6CorrectCount++;
+            updateGame6Scoreboard();
+            playGlobalSuccess();
+
+            if (game6CorrectCount >= 6) {
+                feedback.innerHTML = "<span class='success'>¡SÚPER TRABAJO! Sacha está feliz, ¡eres un expert@ en convivencia! 🏫🏆🐆</span>";
+                document.getElementById('btn-reset-6').style.display = "inline-block";
+            } else {
+                feedback.innerHTML = "<span class='success'>¡EXCELENTE DECISIÓN! Sacha está orgulloso. 🏆</span>";
+                document.getElementById('btn-next-6').style.display = "inline-block";
+            }
+        } else {
+            game6Lives--;
+            updateGame6Scoreboard();
+            playGlobalError();
+
+            if (game6Lives <= 0) {
+                feedback.innerHTML = "<span class='error'>❌ ¡Vuelve a intentarlo! Te quedaste sin vidas en el aula. 😢🏫</span>";
+                document.getElementById('btn-reset-6').style.display = "inline-block";
+            } else {
+                feedback.innerHTML = "<span class='error'>❌ ¡Esa conducta causa problemas, piénsalo otra vez!</span>";
+                setTimeout(() => {
+                    setGame6ButtonsDisabled(false);
+                    feedback.innerHTML = "";
+                }, 1500);
+            }
+        }
+    }
+
+    /* ================= JUEGO 7: SACHA RUTAS DELIVERY ================= */
+    function selectDeliveryLevel(levelNum) {
+        deliveryCurrentLevel = levelNum;
+        changeScreen('screen-delivery-game');
+        
+        document.getElementById('delivery-ui').style.display = 'grid';
+        document.getElementById('delivery-canvas-container').style.display = 'block';
+        document.getElementById('delivery-label-item').textContent = deliveryLevelData[deliveryCurrentLevel].name;
+        
+        buildDynamicDeliveryUIIcon();
+        resetDeliveryGame();
+
+        // Iniciar Música de Fondo 8-bits
+        if (!deliveryBgm) {
+            deliveryBgm = new Audio('sonidos/musica_fondo.mp3');
+            deliveryBgm.loop = true;
+        }
+        if (!deliveryMuted) deliveryBgm.play().catch(e => {});
+    }
+
+    function buildDynamicDeliveryUIIcon() {
+        const iconContainer = document.getElementById('delivery-mini-icon');
+        iconContainer.innerHTML = '';
+        let miniIcon = document.createElement('div');
+        miniIcon.style.width = '12px';
+        miniIcon.style.height = '12px';
+        miniIcon.style.backgroundColor = deliveryLevelData[deliveryCurrentLevel].iconColor;
+        miniIcon.style.border = '1px solid #000';
+        if(deliveryCurrentLevel === 5) miniIcon.style.borderRadius = '2px';
+        iconContainer.appendChild(miniIcon);
+    }
+
+    function moveDeliveryPlayerLeft() {
+        if (deliveryGameState !== 'playing') return;
+        let currentIndex = deliveryLanes.indexOf(deliveryPlayer.x);
+        if (currentIndex > 0) deliveryPlayer.x = deliveryLanes[currentIndex - 1];
+    }
+
+    function moveDeliveryPlayerRight() {
+        if (deliveryGameState !== 'playing') return;
+        let currentIndex = deliveryLanes.indexOf(deliveryPlayer.x);
+        if (currentIndex < deliveryLanes.length - 1) deliveryPlayer.x = deliveryLanes[currentIndex + 1];
+    }
+
+    function stopDeliveryGame() {
+        deliveryGameState = 'menu';
+        if (deliveryBgm) deliveryBgm.pause();
+        if (deliveryAnimationId) {
+            cancelAnimationFrame(deliveryAnimationId);
+            deliveryAnimationId = null;
+        }
+    }
+
+    function resetDeliveryGame() {
+        deliveryLives = 3;
+        deliveryBoxesDelivered = 0;
+        deliveryObjects = [];
+        deliveryGameTick = 0;
+        deliveryGameSpeed = deliveryBaseSpeed;
+        deliverySpawnRate = 50;
+        
+        deliveryPlayer.x = deliveryLanes[2];
+        deliveryPlayer.y = 510;
+        deliveryPlayer.isHoldingBox = false;
+        deliveryPlayer.hitTimer = 0;
+        deliveryPlayer.shieldTimer = 0;
+        deliveryPlayer.turboTimer = 0;
+        
+        deliveryGameState = 'playing';
+        document.getElementById('delivery-game-over').style.display = 'none';
+        document.getElementById('delivery-powerup-status').textContent = '';
+        updateDeliveryLivesUI();
+        document.getElementById('delivery-boxes-display').textContent = deliveryBoxesDelivered;
+        
+        if (deliveryAnimationId) cancelAnimationFrame(deliveryAnimationId);
+        deliveryGameLoop();
+    }
+
+    function updateDeliveryLivesUI() {
+        let hearts = '';
+        for (let i = 0; i < 3; i++) hearts += (i < deliveryLives) ? '❤️' : '•';
+        document.getElementById('delivery-lives-display').textContent = hearts;
+    }
+
+    function deliveryUpdate() {
+        if (deliveryGameState !== 'playing') return;
+
+        deliveryGameTick++;
+        
+        // Manejo de Timers de Power-ups y Efectos
+        if (deliveryPlayer.hitTimer > 0) deliveryPlayer.hitTimer--;
+        
+        let statusText = '';
+        if (deliveryPlayer.shieldTimer > 0) {
+            deliveryPlayer.shieldTimer--;
+            statusText += `🛡️ Escudo (${Math.ceil(deliveryPlayer.shieldTimer/60)}s) `;
+        }
+        if (deliveryPlayer.turboTimer > 0) {
+            deliveryPlayer.turboTimer--;
+            statusText += `⚡ Turbo (${Math.ceil(deliveryPlayer.turboTimer/60)}s) `;
+            // Movimiento automático de entrega si tiene turbo activo
+            if (deliveryPlayer.isHoldingBox) deliveryPlayer.y -= 8;
+        } else {
+            if (deliveryPlayer.isHoldingBox) deliveryPlayer.y -= 4;
+        }
+        document.getElementById('delivery-powerup-status').textContent = statusText;
+
+        deliveryRoadLineOffset += (deliveryPlayer.turboTimer > 0) ? deliveryGameSpeed * 2 : deliveryGameSpeed;
+        if (deliveryRoadLineOffset >= 40) deliveryRoadLineOffset = 0;
+
+        if (deliveryGameTick % deliverySpawnRate === 0) spawnDeliveryObject();
+
+        for (let i = deliveryObjects.length - 1; i >= 0; i--) {
+            deliveryObjects[i].y += (deliveryPlayer.turboTimer > 0) ? deliveryGameSpeed * 2 : deliveryGameSpeed;
+
+            if (checkCollision(deliveryPlayer, deliveryObjects[i])) {
+                let obj = deliveryObjects[i];
+                
+                if (obj.type === 'obstaculo') {
+                    if (deliveryPlayer.shieldTimer > 0 || deliveryPlayer.turboTimer > 0) {
+                        // Invulnerable por Escudo o Turbo
+                        playPlinkSound();
+                    } else {
+                        deliveryLives--;
+                        deliveryPlayer.hitTimer = 30; 
+                        updateDeliveryLivesUI();
+                        playGlobalError();
+                        if (deliveryLives <= 0) endDeliveryGame();
+                    }
+                    deliveryObjects.splice(i, 1);
+                } else if (obj.type === 'caja' && !deliveryPlayer.isHoldingBox) {
+                    deliveryPlayer.isHoldingBox = true;
+                    playPlinkSound();
+                    deliveryObjects.splice(i, 1);
+                } else if (obj.type === 'powerup') {
+                    playPlinkSound();
+                    if (obj.subType === 'escudo') deliveryPlayer.shieldTimer = 300; // 5 segundos
+                    if (obj.subType === 'turbo') deliveryPlayer.turboTimer = 180;  // 3 segundos
+                    if (obj.subType === 'vida' && deliveryLives < 3) {
+                        deliveryLives++;
+                        updateDeliveryLivesUI();
+                    }
+                    deliveryObjects.splice(i, 1);
+                }
+                continue;
+            }
+
+            if (deliveryObjects[i].y > canvas.height) deliveryObjects.splice(i, 1);
+        }
+        
+        // Retorno de entrega exitosa
+        if (deliveryPlayer.isHoldingBox && deliveryPlayer.y <= 70) {
+            deliveryBoxesDelivered++;
+            document.getElementById('delivery-boxes-display').textContent = deliveryBoxesDelivered;
+            deliveryPlayer.isHoldingBox = false;
+            deliveryPlayer.y = 510; 
+            playGlobalSuccess();
+
+            if (deliveryBoxesDelivered % 5 === 0) {
+                deliveryGameSpeed += 0.5;
+                if (deliverySpawnRate > 25) deliverySpawnRate -= 2;
+            }
+            if (deliveryBoxesDelivered >= 15) {
+                if (deliveryCurrentLevel < 5) {
+                    alert("¡Excelente Ruta! Siguiente producto DISAR en camino.");
+                    selectDeliveryLevel(deliveryCurrentLevel + 1);
+                } else {
+                    deliveryGameState = 'won';
+                    document.getElementById('delivery-final-text').innerHTML = `¡SÚPER SACHA DELIVERY! 🏆🚚<br>Abasteciste con éxito todas las regiones de Ecuador.`;
+                    document.getElementById('delivery-game-over').style.display = 'block';
+                }
+            }
+        }
+    }
+
+    function spawnDeliveryObject() {
+        const randomLane = deliveryLanes[Math.floor(Math.random() * deliveryLanes.length)] + 7;
+        const rand = Math.random();
+
+        if (rand < 0.50) {
+            const obsTypes = ['cono', 'aceite', 'valla'];
+            const chosenType = obsTypes[Math.floor(Math.random() * obsTypes.length)];
+            deliveryObjects.push({ type: 'obstaculo', subType: chosenType, x: randomLane, y: -40, width: 40, height: 40 });
+        } else if (rand < 0.85) {
+            deliveryObjects.push({ type: 'caja', x: randomLane, y: -40, width: 40, height: 40 });
+        } else {
+            // Generación de Power-Ups
+            const pUpTypes = ['escudo', 'turbo', 'vida'];
+            const chosenPUp = pUpTypes[Math.floor(Math.random() * pUpTypes.length)];
+            deliveryObjects.push({ type: 'powerup', subType: chosenPUp, x: randomLane, y: -40, width: 40, height: 40 });
+        }
+    }
+
+    function endDeliveryGame() {
+        deliveryGameState = 'gameover';
+        if (deliveryBgm) deliveryBgm.pause();
+        let itemNameText = deliveryLevelData[deliveryCurrentLevel].name.toLowerCase();
+        document.getElementById('delivery-final-text').innerHTML = `¡Ruta finalizada!<br>Entregaste ${deliveryBoxesDelivered} ${itemNameText}.`;
+        document.getElementById('delivery-game-over').style.display = 'block';
+    }
+
+    function deliveryGameLoop() {
+        if (deliveryGameState === 'playing') {
+            deliveryUpdate();
+            deliveryDraw();
+        }
+        deliveryAnimationId = requestAnimationFrame(deliveryGameLoop);
+    }
+
+    function deliveryDraw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        ctx.fillStyle = '#1b4332'; ctx.fillRect(0, 0, 65, canvas.height); ctx.fillRect(415, 0, 65, canvas.height);
+        ctx.fillStyle = '#2d6a4f';
+        for(let i=0; i<canvas.height; i+=40) {
+            ctx.beginPath(); ctx.arc(25, i + 20, 20, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(455, i + 10, 20, 0, Math.PI*2); ctx.fill();
+        }
+
+        ctx.fillStyle = '#ff3336'; ctx.fillRect(20, 120, 10, 15); ctx.fillStyle = '#ffcc00'; ctx.fillRect(30, 122, 4, 4); ctx.fillStyle = '#0088ff'; ctx.fillRect(18, 125, 4, 8);
+        ctx.fillStyle = '#6f4e37'; ctx.beginPath(); ctx.arc(450, 300, 8, 0, Math.PI*2); ctx.fill(); ctx.fillRect(444, 308, 12, 14);
+
+        ctx.fillStyle = '#2a2a2a'; ctx.fillRect(65, 0, 350, canvas.height);
+        ctx.fillStyle = '#ffffff'; ctx.fillRect(65, 0, 4, canvas.height); ctx.fillRect(411, 0, 4, canvas.height);
+
+        ctx.fillStyle = '#ffffff';
+        for (let laneX of deliveryLanes) {
+            if (laneX === deliveryLanes[0]) continue;
+            for (let y = -40 + deliveryRoadLineOffset; y < canvas.height; y += 60) ctx.fillRect(laneX - 2, y, 4, 30);
+        }
+
+        ctx.fillStyle = '#0066ff'; ctx.fillRect(65, 0, 350, 70);
+        let squareSize = 10; let startY = 60;
+        for (let x = 65; x < 415; x += squareSize * 2) {
+            ctx.fillStyle = '#000000'; ctx.fillRect(x, startY, squareSize, squareSize); ctx.fillRect(x + squareSize, startY + squareSize, squareSize, squareSize);
+            ctx.fillStyle = '#ffffff'; ctx.fillRect(x + squareSize, startY, squareSize, squareSize); ctx.fillRect(x, startY + squareSize, squareSize, squareSize);
+        }
+        ctx.fillStyle = '#ffffff'; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('✓ ENTREGA DISAR COMPLETADA ✓', 240, 38); ctx.textAlign = 'start';
+
+        for (let obj of deliveryObjects) {
+            if (obj.type === 'obstaculo') {
+                if (obj.subType === 'cono') {
+                    ctx.fillStyle = '#ff5500'; ctx.beginPath(); ctx.moveTo(obj.x + 20, obj.y); ctx.lineTo(obj.x, obj.y + 40); ctx.lineTo(obj.x + 40, obj.y + 40); ctx.fill();
+                    ctx.fillStyle = '#ffffff'; ctx.fillRect(obj.x + 8, obj.y + 18, 24, 8);
+                } else if (obj.subType === 'aceite') {
+                    ctx.fillStyle = '#111111'; ctx.beginPath(); ctx.ellipse(obj.x + 20, obj.y + 20, 18, 12, 0, 0, Math.PI * 2); ctx.fill();
+                } else if (obj.subType === 'valla') {
+                    ctx.fillStyle = '#ffcc00'; ctx.fillRect(obj.x, obj.y + 10, 40, 15); ctx.fillStyle = '#222222'; ctx.fillRect(obj.x + 6, obj.y + 10, 6, 15); ctx.fillRect(obj.x + 20, obj.y + 10, 6, 15);
+                    ctx.fillStyle = '#666'; ctx.fillRect(obj.x + 4, obj.y + 25, 4, 12); ctx.fillRect(obj.x + 32, obj.y + 25, 4, 12);
+                }
+            } else if (obj.type === 'caja') {
+                drawDeliveryLevelItem(obj.x, obj.y, false);
+            } else if (obj.type === 'powerup') {
+                // RENDERIZADO DE POWERUPS EN PANTALLA
+                ctx.save();
+                ctx.font = '24px sans-serif';
+                let pEmoji = '🛡️';
+                if(obj.subType === 'turbo') pEmoji = '🌟';
+                if(obj.subType === 'vida') pEmoji = '❤️';
+                ctx.fillText(pEmoji, obj.x + 5, obj.y + 28);
+                ctx.restore();
+            }
+        }
+
+        drawDeliveryPlayer(deliveryPlayer.x - 2, deliveryPlayer.y);
+    }
+
+    function drawDeliveryLevelItem(x, y, isCarried) {
+        ctx.save();
+        let scale = isCarried ? 0.8 : 1.0;
+        ctx.translate(x, y);
+        ctx.scale(scale, scale);
+
+        if (deliveryCurrentLevel === 1) {
+            ctx.fillStyle = '#d99652'; ctx.fillRect(0, 0, 36, 36);
+            ctx.fillStyle = '#b37336'; ctx.fillRect(14, 0, 8, 36); ctx.fillRect(0, 14, 36, 8);
+        } else if (deliveryCurrentLevel === 2) {
+            ctx.fillStyle = '#111'; ctx.fillRect(4, 12, 32, 14);
+            ctx.fillStyle = '#444'; ctx.fillRect(16, 16, 12, 8);
+            ctx.fillStyle = '#111';
+            ctx.beginPath(); ctx.arc(8, 24, 8, 0, Math.PI*2); ctx.fill();
+            ctx.beginPath(); ctx.arc(32, 24, 8, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = '#ff3300'; ctx.fillRect(12, 10, 8, 10);
+            ctx.fillStyle = '#6d281e'; ctx.fillRect(24, 8, 12, 6);
+        } else if (deliveryCurrentLevel === 3) {
+            ctx.fillStyle = '#222222'; ctx.fillRect(2, 4, 32, 24);
+            ctx.fillStyle = '#00ccff'; ctx.fillRect(5, 7, 26, 18);
+        } else if (deliveryCurrentLevel === 4) {
+            ctx.fillStyle = '#aaaaaa'; ctx.fillRect(4, 26, 28, 4);
+            ctx.fillStyle = '#555555'; ctx.fillRect(8, 4, 20, 22);
+        } else if (deliveryCurrentLevel === 5) {
+            ctx.fillStyle = '#000000'; ctx.fillRect(6, 0, 24, 36);
+            ctx.fillStyle = '#cccccc'; ctx.fillRect(7, 1, 22, 34);
+            ctx.fillStyle = '#5da9cc'; ctx.fillRect(9, 7, 18, 22);
+        }
+        ctx.restore();
+    }
+
+    function drawDeliveryPlayer(x, y) {
+        ctx.save();
+        
+        // Aura del Escudo DISAR (Brillante)
+        if (deliveryPlayer.shieldTimer > 0) {
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = '#00ccff';
+            ctx.strokeStyle = '#00ccff';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.arc(x + 25, y + 35, 45, 0, Math.PI*2);
+            ctx.stroke();
+        }
+
+        // Estilo parpadeo por golpe
+        if (deliveryPlayer.hitTimer > 0 && Math.floor(deliveryPlayer.hitTimer / 4) % 2 === 0) ctx.globalAlpha = 0.2;
+
+        ctx.fillStyle = '#ffb31a'; ctx.beginPath(); ctx.arc(x + 5, y + 60, 6, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#332200'; ctx.fillRect(x + 3, y + 58, 3, 3);
+        ctx.fillStyle = '#ffb31a'; ctx.fillRect(x + 8, y + 65, 12, 10); ctx.fillRect(x + 35, y + 65, 12, 10);
+
+        ctx.fillStyle = '#0088ff'; ctx.fillRect(x + 5, y + 30, 45, 38); ctx.fillRect(x - 2, y + 30, 9, 14); ctx.fillRect(x + 48, y + 30, 9, 14);
+        ctx.fillStyle = '#ffb31a'; ctx.fillRect(x - 2, y + 44, 8, 10); ctx.fillRect(x + 49, y + 44, 8, 10);
+        ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.strokeRect(x + 18, y + 40, 18, 12); ctx.strokeRect(x + 21, y + 43, 12, 6);
+        ctx.fillStyle = '#ffffff'; ctx.font = 'bold 8px sans-serif'; ctx.fillText('DISAR', x + 16, y + 60);
+
+        ctx.fillStyle = '#ffb31a'; ctx.beginPath(); ctx.arc(x + 27, y + 16, 18, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#ffb31a'; ctx.beginPath(); ctx.arc(x + 12, y + 3, 7, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.arc(x + 42, y + 3, 7, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#ff9999'; ctx.beginPath(); ctx.arc(x + 12, y + 3, 4, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.arc(x + 42, y + 3, 4, 0, Math.PI * 2); ctx.fill();
+
+        ctx.fillStyle = '#332200'; ctx.fillRect(x + 14, y + 10, 4, 3); ctx.fillRect(x + 36, y + 9, 3, 4); ctx.fillRect(x + 25, y + 4, 4, 3); ctx.fillRect(x + 45, y + 54, 4, 4);
+        ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(x + 19, y + 15, 5, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.arc(x + 35, y + 15, 5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#0088ff'; ctx.beginPath(); ctx.arc(x + 19, y + 15, 3, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.arc(x + 35, y + 15, 3, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(x + 18, y + 14, 1, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.arc(x + 34, y + 14, 1, 0, Math.PI * 2); ctx.fill();
+
+        ctx.fillStyle = '#ffccd5'; ctx.beginPath(); ctx.moveTo(x + 25, y + 18); ctx.lineTo(x + 29, y + 18); ctx.lineTo(x + 27, y + 21); ctx.fill();
+        ctx.strokeStyle = '#332200'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(x + 27, y + 20, 4, 0, Math.PI); ctx.stroke();
+
+        ctx.fillStyle = '#0055cc'; ctx.beginPath(); ctx.arc(x + 27, y + 4, 15, Math.PI, 0); ctx.fill(); ctx.fillRect(x + 12, y + 2, 32, 4); 
+
+        ctx.restore();
+
+        if (deliveryPlayer.isHoldingBox) drawDeliveryLevelItem(deliveryPlayer.x + 8, deliveryPlayer.y - 22, true);
+    }
+
+    function checkCollision(rect1, rect2) {
+        return (rect1.x < rect2.x + rect2.width && rect1.x + rect1.width > rect2.x && rect1.y < rect2.y + rect2.height && rect1.y + rect1.height > rect2.y);
+    }
+
+    /* ================= DRAG & DROP UTILS ================= */
     function buildDragAndDropLevel(spawnZoneId, itemsBase) {
         const spawnZone = document.getElementById(spawnZoneId);
         spawnZone.innerHTML = "";
@@ -1053,88 +1598,40 @@
         }
     }
 
-    /* ================= MODIFICACIÓN: LÓGICA MINIJUEGO 6 (NORMAS DEL AULA INTEGRAL) ================= */
-    function resetGame6() {
-        game6CorrectCount = 0;
-        game6Lives = 3;
-        document.getElementById('btn-reset-6').style.display = "none";
-        document.getElementById('btn-next-6').style.display = "none";
-        document.getElementById('feedback-6').innerHTML = "";
-        setGame6ButtonsDisabled(false);
-        
-        // Mezclamos el pool completo de 10 situaciones para que cada partida sea aleatoria y diferente
-        situacionesFiltradas = [...situacionesAula].sort(() => Math.random() - 0.5);
-        
-        updateGame6Scoreboard();
-        nextRoundGame6();
-    }
-
-    function updateGame6Scoreboard() {
-        document.getElementById('game6-score').innerText = "Aciertos: " + game6CorrectCount + "/6";
-        let hearts = "";
-        for(let i=0; i<3; i++) { hearts += (i < game6Lives) ? "❤️" : "🖤"; }
-        document.getElementById('game6-lives').innerText = "Vidas: " + hearts;
-    }
-
-    function setGame6ButtonsDisabled(disabledStatus) {
-        document.getElementById('btn-behavior-good').disabled = disabledStatus;
-        document.getElementById('btn-behavior-bad').disabled = disabledStatus;
-    }
-
-    function nextRoundGame6() {
-        if(currentAudio) currentAudio.pause();
-        document.getElementById('feedback-6').innerHTML = "";
-        document.getElementById('btn-next-6').style.display = "none";
-        
-        if (game6CorrectCount >= 6 || game6Lives <= 0) return;
-
-        setGame6ButtonsDisabled(false);
-        
-        // Obtenemos la situación correspondiente usando el conteo de aciertos actuales como índice
-        currentClassroomCase = situacionesFiltradas[game6CorrectCount];
-        
-        document.getElementById('classroom-emoji').innerText = currentClassroomCase.emoji;
-        document.getElementById('classroom-text').innerText = currentClassroomCase.text;
-    }
-
-    function playClassroomSound() {
-        if(currentAudio) currentAudio.pause();
-        currentAudio = new Audio(currentClassroomCase.audio); currentAudio.play().catch(e => {});
-    }
-
-    function checkBehaviorAnswer(userSelectedTrue) {
-        setGame6ButtonsDisabled(true);
-        const feedback = document.getElementById('feedback-6');
-        
-        if (userSelectedTrue === currentClassroomCase.isGood) {
-            game6CorrectCount++;
-            updateGame6Scoreboard();
-            playGlobalSuccess();
-
-            if (game6CorrectCount >= 6) {
-                feedback.innerHTML = "<span class='success'>¡SÚPER TRABAJO! Sacha está feliz, ¡eres un experto en convivencia! 🏫🏆🐆</span>";
-                document.getElementById('btn-reset-6').style.display = "inline-block";
-            } else {
-                feedback.innerHTML = "<span class='success'>¡EXCELENTE DECISIÓN! Sacha está orgulloso. 🏆</span>";
-                document.getElementById('btn-next-6').style.display = "inline-block";
-            }
-        } else {
-            game6Lives--;
-            updateGame6Scoreboard();
-            playGlobalError();
-
-            if (game6Lives <= 0) {
-                feedback.innerHTML = "<span class='error'>❌ ¡Vuelve a intentarlo! Te quedaste sin vidas en el aula. 😢🏫</span>";
-                document.getElementById('btn-reset-6').style.display = "inline-block";
-            } else {
-                feedback.innerHTML = "<span class='error'>❌ ¡Esa conducta causa problemas, piénsalo otra vez!</span>";
-                setTimeout(() => {
-                    setGame6ButtonsDisabled(false);
-                    feedback.innerHTML = "";
-                }, 1500);
-            }
+    // CONTROLES DE DIRECCIÓN JUEGO 7
+    window.addEventListener('keydown', function(e) {
+        if (deliveryGameState !== 'playing') return;
+        if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+            moveDeliveryPlayerLeft();
+        } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+            moveDeliveryPlayerRight();
         }
-    }
+    });
+
+    const container = document.getElementById('delivery-canvas-container');
+    container.addEventListener('touchstart', function(e) {
+        if (deliveryGameState !== 'playing') return;
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+    }, {passive: true});
+
+    container.addEventListener('touchend', function(e) {
+        if (deliveryGameState !== 'playing') return;
+        let touchEndX = e.changedTouches[0].clientX;
+        let touchEndY = e.changedTouches[0].clientY;
+        let diffX = touchEndX - touchStartX;
+        let diffY = touchEndY - touchStartY;
+
+        if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > minSwipeDistance) {
+            if (diffX > 0) moveDeliveryPlayerRight();
+            else moveDeliveryPlayerLeft();
+        }
+    }, {passive: true});
+
+    window.onload = function() {
+        canvas = document.getElementById('deliveryCanvas');
+        ctx = canvas.getContext('2d');
+    };
 </script>
 
 </body>
